@@ -10,7 +10,7 @@ import Dashboard from "./pages/Dashboard.tsx";
 import DataIngestion from "./pages/DataIngestion.tsx";
 import Insights from "./pages/Insights.tsx";
 import Forecasting from "./pages/Forecasting.tsx";
-
+import DemandTrends from "./pages/DemandTrends.tsx";
 import Distribution from "./pages/Distribution.tsx";
 import AiMonitor from "./pages/AiMonitor.tsx";
 import Admin from "./pages/Admin.tsx";
