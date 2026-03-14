@@ -7,6 +7,7 @@ import {
   Share2,
   Lightbulb,
   Settings,
+  Brain,
 } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
@@ -29,6 +30,7 @@ const mainNavItems = [
   { title: "Forecasting", url: "/forecasting", icon: LineChart },
   { title: "Audience", url: "/audience", icon: Users },
   { title: "Distribution", url: "/distribution", icon: Share2 },
+  { title: "AI Monitor", url: "/ai-monitor", icon: Brain },
 ];
 
 const systemNavItems = [

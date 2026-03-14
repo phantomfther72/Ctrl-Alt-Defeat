@@ -12,6 +12,7 @@ import Insights from "./pages/Insights.tsx";
 import Forecasting from "./pages/Forecasting.tsx";
 import Audience from "./pages/Audience.tsx";
 import Distribution from "./pages/Distribution.tsx";
+import AiMonitor from "./pages/AiMonitor.tsx";
 import Admin from "./pages/Admin.tsx";
 import Login from "./pages/Login.tsx";
 import Signup from "./pages/Signup.tsx";
@@ -40,6 +41,7 @@ const App = () => (
             <Route path="/forecasting" element={<ProtectedRoute><Forecasting /></ProtectedRoute>} />
             <Route path="/audience" element={<ProtectedRoute><Audience /></ProtectedRoute>} />
             <Route path="/distribution" element={<ProtectedRoute><Distribution /></ProtectedRoute>} />
+            <Route path="/ai-monitor" element={<ProtectedRoute><AiMonitor /></ProtectedRoute>} />
             <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
