@@ -26,6 +26,8 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { AppSidebar } from "@/components/AppSidebar";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
+import { TopBar } from "@/components/TopBar";
+import { WalkthroughTour } from "@/components/WalkthroughTour";
 
 // --- Fallback Data ---
 const monthlyFallback = [
@@ -292,8 +294,13 @@ export default function Index() {
 
   return (
     <SidebarProvider>
-      <AppSidebar />
+      <div data-tour="sidebar">
+        <AppSidebar />
+      </div>
       <SidebarInset>
+        <div data-tour="topbar">
+          <TopBar />
+        </div>
         <div style={{ minHeight: "100vh", background: "#F7F8FA", fontFamily: "'DM Sans', sans-serif" }}>
           <style>{`
             @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
@@ -420,6 +427,7 @@ export default function Index() {
           </div>
         </div>
       </SidebarInset>
+      <WalkthroughTour />
     </SidebarProvider>
   );
 }
