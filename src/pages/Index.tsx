@@ -294,8 +294,13 @@ export default function Index() {
 
   return (
     <SidebarProvider>
-      <AppSidebar />
+      <div data-tour="sidebar">
+        <AppSidebar />
+      </div>
       <SidebarInset>
+        <div data-tour="topbar">
+          <TopBar />
+        </div>
         <div style={{ minHeight: "100vh", background: "#F7F8FA", fontFamily: "'DM Sans', sans-serif" }}>
           <style>{`
             @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
