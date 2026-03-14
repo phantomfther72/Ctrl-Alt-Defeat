@@ -31,6 +31,7 @@ const mainNavItems = [
   { title: "Demand Trends", url: "/demand-trends", icon: Newspaper },
   { title: "Distribution", url: "/distribution", icon: Share2 },
   { title: "AI Monitor", url: "/ai-monitor", icon: Brain },
+  { title: "Supply AI", url: "/supply-ai", icon: Newspaper },
 ];
 
 const systemNavItems = [
