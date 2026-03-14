@@ -9,12 +9,11 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 
 const pageTitles: Record<string, string> = {
   "/": "Dashboard",
-  "/dashboard": "Dashboard",
   "/data-ingestion": "Data Ingestion",
   "/insights": "Insights",
   "/forecasting": "Forecasting",
-  "/audience": "Audience",
-  "/distribution": "Distribution",
+  "/ai-monitor": "AI Monitor",
+  "/supply-ai": "Supply AI",
   "/admin": "Admin",
 };
 

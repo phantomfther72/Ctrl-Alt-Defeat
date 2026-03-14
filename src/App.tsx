@@ -6,12 +6,9 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Index from "./pages/Index.tsx";
-import Dashboard from "./pages/Dashboard.tsx";
 import DataIngestion from "./pages/DataIngestion.tsx";
 import Insights from "./pages/Insights.tsx";
 import Forecasting from "./pages/Forecasting.tsx";
-import DemandTrends from "./pages/DemandTrends.tsx";
-import Distribution from "./pages/Distribution.tsx";
 import AiMonitor from "./pages/AiMonitor.tsx";
 import Admin from "./pages/Admin.tsx";
 import Login from "./pages/Login.tsx";
@@ -36,12 +33,9 @@ const App = () => (
             <Route path="/signup" element={<Signup />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
-            <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="/data-ingestion" element={<ProtectedRoute><DataIngestion /></ProtectedRoute>} />
             <Route path="/insights" element={<ProtectedRoute><Insights /></ProtectedRoute>} />
             <Route path="/forecasting" element={<ProtectedRoute><Forecasting /></ProtectedRoute>} />
-            <Route path="/demand-trends" element={<ProtectedRoute><DemandTrends /></ProtectedRoute>} />
-            <Route path="/distribution" element={<ProtectedRoute><Distribution /></ProtectedRoute>} />
             <Route path="/ai-monitor" element={<ProtectedRoute><AiMonitor /></ProtectedRoute>} />
             <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
             <Route path="/supply-ai" element={<ProtectedRoute><SupplyAI /></ProtectedRoute>} />

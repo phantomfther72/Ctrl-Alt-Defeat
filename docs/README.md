@@ -133,13 +133,10 @@ The platform serves a newspaper distribution company operating across multiple r
 │   ├── lib/
 │   │   └── utils.ts               # Utility functions (cn, etc.)
 │   ├── pages/
-│   │   ├── Index.tsx              # Main dashboard (Distribution Dashboard)
+│   │   ├── Index.tsx              # Main dashboard (Distribution Dashboard + AI Trend Analysis)
 │   │   ├── Admin.tsx              # Admin panel
 │   │   ├── AiMonitor.tsx          # AI model monitoring
-│   │   ├── Dashboard.tsx          # Secondary dashboard
 │   │   ├── DataIngestion.tsx      # File upload & data processing
-│   │   ├── DemandTrends.tsx       # Demand trend analysis
-│   │   ├── Distribution.tsx       # Distribution management
 │   │   ├── Forecasting.tsx        # Revenue/demand forecasting
 │   │   ├── Insights.tsx           # AI-generated insights
 │   │   ├── SupplyAI.tsx           # AI Supply Intelligence dashboard
@@ -148,6 +145,10 @@ The platform serves a newspaper distribution company operating across multiple r
 │   │   ├── ForgotPassword.tsx     # Password recovery
 │   │   ├── ResetPassword.tsx      # Password reset
 │   │   └── NotFound.tsx           # 404 page
+│   ├── hooks/
+│   │   ├── useDistributionData.ts # Shared hook for monthly + location data
+│   │   ├── use-mobile.tsx
+│   │   └── use-toast.ts
 │   └── test/
 │       ├── example.test.ts
 │       └── setup.ts
@@ -172,7 +173,6 @@ The platform serves a newspaper distribution company operating across multiple r
 
 | Table                | Purpose                                      | Key Columns                                              |
 |----------------------|----------------------------------------------|----------------------------------------------------------|
-| `analytics_data`     | Web/app analytics metrics                    | date, pageviews, sessions, bounce_rate, source           |
 | `clean_data`         | Cleaned distribution records per outlet      | shop_id, shop_name, month, quantity_sold, quantity_returned, revenue, category |
 | `distribution_events`| Holidays, campaigns, events affecting demand | event_name, event_type, start_date, end_date, description|
 | `file_uploads`       | Uploaded file tracking                       | file_name, status, user_id, file_size, row_count         |
@@ -182,8 +182,9 @@ The platform serves a newspaper distribution company operating across multiple r
 | `monthly_summary`    | Aggregated monthly sales/returns             | month, total_sales, total_returns, revenue, sell_through_pct, return_rate_pct |
 | `parsed_data`        | Raw parsed data from uploads                 | file_upload_id, row_index, data (JSONB)                  |
 | `predictions`        | Per-outlet sales predictions                 | shop_id, shop_name, month, predicted_sales, actual_sales |
-| `traffic_sources`    | Website traffic source breakdown             | name, percentage, date                                   |
 | `trend_analysis`     | Computed trend metrics                       | analysis_type, metric_name, metric_value, location, trend_direction, insight |
+
+> **Note:** `analytics_data` and `traffic_sources` tables exist in the schema but are no longer used by any page. They were part of the removed Dashboard.tsx (web analytics). They can be dropped in a future migration.
 
 ### Row-Level Security (RLS)
 
@@ -232,17 +233,14 @@ const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/analyze-trends`;
 
 | Route              | Page Component    | Auth Required | Description                              |
 |--------------------|-------------------|---------------|------------------------------------------|
-| `/`                | `Index.tsx`       | No            | Landing / Distribution Dashboard         |
+| `/`                | `Index.tsx`       | No            | Distribution Dashboard + AI Trend Analysis |
 | `/login`           | `Login.tsx`       | No            | User login                               |
 | `/signup`          | `Signup.tsx`      | No            | User registration                        |
 | `/forgot-password` | `ForgotPassword`  | No            | Password recovery                        |
 | `/reset-password`  | `ResetPassword`   | No            | Password reset (from email link)         |
-| `/dashboard`       | `Dashboard.tsx`   | Yes           | Secondary dashboard                      |
 | `/data-ingestion`  | `DataIngestion`   | Yes           | Upload & process data files              |
 | `/insights`        | `Insights.tsx`    | Yes           | AI-generated business insights           |
 | `/forecasting`     | `Forecasting.tsx` | Yes           | Demand & revenue forecasting             |
-| `/demand-trends`   | `DemandTrends`    | Yes           | Trend analysis with AI                   |
-| `/distribution`    | `Distribution`    | Yes           | Distribution event management            |
 | `/ai-monitor`      | `AiMonitor.tsx`   | Yes           | AI model performance monitoring          |
 | `/supply-ai`       | `SupplyAI.tsx`    | Yes           | AI Supply Intelligence advisor           |
 | `/admin`           | `Admin.tsx`       | Yes           | Administration panel                     |
@@ -251,8 +249,13 @@ const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/analyze-trends`;
 ### Sidebar Navigation
 
 Defined in `AppSidebar.tsx` with two groups:
-- **Analytics**: Dashboard, Data Ingestion, Insights, Forecasting, Demand Trends, Distribution, AI Monitor, Supply AI
+- **Analytics**: Dashboard, Data Ingestion, Insights, Forecasting, AI Monitor, Supply AI
 - **System**: Admin
+
+### Removed Pages (v1.1)
+- `Dashboard.tsx` — Used `analytics_data`/`traffic_sources` (web analytics unrelated to distribution domain)
+- `Distribution.tsx` — 100% hardcoded mock data for email/social channels, not connected to any database
+- `DemandTrends.tsx` — Merged into `Index.tsx` (identical charts + AI analysis consolidated)
 
 ---
 

@@ -30,7 +30,7 @@ export default function Signup() {
       toast({ title: "Signup failed", description: error.message, variant: "destructive" });
     } else if (data.session) {
       // Auto-confirmed, redirect to dashboard
-      navigate("/dashboard");
+      navigate("/");
     } else {
       toast({
         title: "Check your email",
