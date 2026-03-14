@@ -146,6 +146,38 @@ export type Database = {
         }
         Relationships: []
       }
+      parsed_data: {
+        Row: {
+          created_at: string
+          data: Json
+          file_upload_id: string
+          id: string
+          row_index: number
+        }
+        Insert: {
+          created_at?: string
+          data: Json
+          file_upload_id: string
+          id?: string
+          row_index: number
+        }
+        Update: {
+          created_at?: string
+          data?: Json
+          file_upload_id?: string
+          id?: string
+          row_index?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "parsed_data_file_upload_id_fkey"
+            columns: ["file_upload_id"]
+            isOneToOne: false
+            referencedRelation: "file_uploads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       traffic_sources: {
         Row: {
           created_at: string
