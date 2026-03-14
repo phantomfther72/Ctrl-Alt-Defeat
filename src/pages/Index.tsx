@@ -26,6 +26,8 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { AppSidebar } from "@/components/AppSidebar";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
+import { TopBar } from "@/components/TopBar";
+import { WalkthroughTour } from "@/components/WalkthroughTour";
 
 // --- Fallback Data ---
 const monthlyFallback = [
