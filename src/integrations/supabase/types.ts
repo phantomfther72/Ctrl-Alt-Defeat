@@ -91,22 +91,37 @@ export type Database = {
           actual: number | null
           created_at: string
           forecast: number | null
+          generated_by: string | null
+          growth_rate: number | null
           id: string
+          lower_bound: number | null
           month: string
+          scenario: string
+          upper_bound: number | null
         }
         Insert: {
           actual?: number | null
           created_at?: string
           forecast?: number | null
+          generated_by?: string | null
+          growth_rate?: number | null
           id?: string
+          lower_bound?: number | null
           month: string
+          scenario?: string
+          upper_bound?: number | null
         }
         Update: {
           actual?: number | null
           created_at?: string
           forecast?: number | null
+          generated_by?: string | null
+          growth_rate?: number | null
           id?: string
+          lower_bound?: number | null
           month?: string
+          scenario?: string
+          upper_bound?: number | null
         }
         Relationships: []
       }
