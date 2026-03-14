@@ -384,7 +384,7 @@ export default function Forecasting() {
                               N${row.regression.toLocaleString()}
                             </td>
                             <td className="py-2 px-3 text-right text-emerald-500">
-                              {row.predicted !== null ? `$${row.predicted.toLocaleString()}` : "—"}
+                              {row.predicted !== null ? `N$${row.predicted.toLocaleString()}` : "—"}
                             </td>
                             <td className={`py-2 px-3 text-right text-xs ${variance >= 0 ? "text-emerald-500" : "text-red-400"}`}>
                               {variance >= 0 ? "+" : ""}{Math.round(variance).toLocaleString()}
