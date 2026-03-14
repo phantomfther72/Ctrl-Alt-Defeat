@@ -277,7 +277,7 @@ export default function Forecasting() {
             </div>
 
             {/* Regression Chart */}
-            <Card className="shadow-card border-border/50">
+            <Card data-tour="forecast-chart" className="shadow-card border-border/50">
               <CardHeader>
                 <CardTitle className="font-heading text-base">
                   Revenue — Actual vs. Regression Forecast
