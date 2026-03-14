@@ -133,13 +133,10 @@ The platform serves a newspaper distribution company operating across multiple r
 │   ├── lib/
 │   │   └── utils.ts               # Utility functions (cn, etc.)
 │   ├── pages/
-│   │   ├── Index.tsx              # Main dashboard (Distribution Dashboard)
+│   │   ├── Index.tsx              # Main dashboard (Distribution Dashboard + AI Trend Analysis)
 │   │   ├── Admin.tsx              # Admin panel
 │   │   ├── AiMonitor.tsx          # AI model monitoring
-│   │   ├── Dashboard.tsx          # Secondary dashboard
 │   │   ├── DataIngestion.tsx      # File upload & data processing
-│   │   ├── DemandTrends.tsx       # Demand trend analysis
-│   │   ├── Distribution.tsx       # Distribution management
 │   │   ├── Forecasting.tsx        # Revenue/demand forecasting
 │   │   ├── Insights.tsx           # AI-generated insights
 │   │   ├── SupplyAI.tsx           # AI Supply Intelligence dashboard
@@ -148,6 +145,10 @@ The platform serves a newspaper distribution company operating across multiple r
 │   │   ├── ForgotPassword.tsx     # Password recovery
 │   │   ├── ResetPassword.tsx      # Password reset
 │   │   └── NotFound.tsx           # 404 page
+│   ├── hooks/
+│   │   ├── useDistributionData.ts # Shared hook for monthly + location data
+│   │   ├── use-mobile.tsx
+│   │   └── use-toast.ts
 │   └── test/
 │       ├── example.test.ts
 │       └── setup.ts
