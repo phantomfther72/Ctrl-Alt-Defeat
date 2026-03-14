@@ -192,10 +192,10 @@ export default function Forecasting() {
         {
           label: "Est. Year-End",
           value: analysis.estYearEnd >= 1_000_000
-            ? `$${(analysis.estYearEnd / 1_000_000).toFixed(2)}M`
+            ? `N$${(analysis.estYearEnd / 1_000_000).toFixed(2)}M`
             : analysis.estYearEnd >= 1000
-              ? `$${(analysis.estYearEnd / 1000).toFixed(1)}K`
-              : `$${Math.round(analysis.estYearEnd)}`,
+              ? `N$${(analysis.estYearEnd / 1000).toFixed(1)}K`
+              : `N$${Math.round(analysis.estYearEnd)}`,
           icon: BarChart3,
           description: analysis.isProfit ? "Projected Profit" : "Projected Loss",
           status: analysis.isProfit ? "positive" : "negative",
@@ -307,7 +307,7 @@ export default function Forecasting() {
                         fontSize: 12,
                       }}
                       formatter={(value: any, name: string) => [
-                        `$${Number(value).toLocaleString()}`,
+                        `N$${Number(value).toLocaleString()}`,
                         name === "actual" ? "Actual" : name === "predicted" ? "Predicted" : "Regression Line",
                       ]}
                     />
@@ -378,13 +378,13 @@ export default function Forecasting() {
                           <tr key={row.month} className="border-b border-border/50 hover:bg-muted/30 transition-colors">
                             <td className="py-2 px-3 font-medium text-card-foreground">{row.month}</td>
                             <td className="py-2 px-3 text-right text-card-foreground">
-                              {row.actual !== null ? `$${row.actual.toLocaleString()}` : "—"}
+                              {row.actual !== null ? `N$${row.actual.toLocaleString()}` : "—"}
                             </td>
                             <td className="py-2 px-3 text-right text-muted-foreground">
-                              ${row.regression.toLocaleString()}
+                              N${row.regression.toLocaleString()}
                             </td>
                             <td className="py-2 px-3 text-right text-emerald-500">
-                              {row.predicted !== null ? `$${row.predicted.toLocaleString()}` : "—"}
+                              {row.predicted !== null ? `N$${row.predicted.toLocaleString()}` : "—"}
                             </td>
                             <td className={`py-2 px-3 text-right text-xs ${variance >= 0 ? "text-emerald-500" : "text-red-400"}`}>
                               {variance >= 0 ? "+" : ""}{Math.round(variance).toLocaleString()}
