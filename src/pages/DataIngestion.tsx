@@ -335,7 +335,7 @@ export default function DataIngestion() {
         </Card>
 
         {/* Recent Uploads */}
-        <Card className="shadow-card border-border/50">
+        <Card data-tour="upload-history" className="shadow-card border-border/50">
           <CardHeader>
             <CardTitle className="font-heading text-base">Recent Uploads</CardTitle>
           </CardHeader>

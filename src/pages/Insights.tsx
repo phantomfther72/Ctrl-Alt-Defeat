@@ -125,7 +125,7 @@ export default function Insights() {
           <p className="text-sm text-muted-foreground">
             AI-generated insights and business intelligence recommendations.
           </p>
-          <div className="flex gap-2">
+          <div data-tour="insights-generate" className="flex gap-2">
             <Button variant="outline" size="sm" onClick={fetchInsights} disabled={loading}>
               <RefreshCw className="h-4 w-4 mr-1.5" />
               Refresh
