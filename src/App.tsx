@@ -19,6 +19,7 @@ import Signup from "./pages/Signup.tsx";
 import ForgotPassword from "./pages/ForgotPassword.tsx";
 import ResetPassword from "./pages/ResetPassword.tsx";
 import NotFound from "./pages/NotFound.tsx";
+import SupplyAI from "./pages/SupplyAI.tsx";
 
 const queryClient = new QueryClient();
 
