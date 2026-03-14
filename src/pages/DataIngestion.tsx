@@ -280,6 +280,7 @@ export default function DataIngestion() {
 
         {/* Upload Area */}
         <Card
+          data-tour="upload-area"
           className={`shadow-card border-2 border-dashed transition-colors cursor-pointer ${
             dragActive ? "border-primary bg-primary/5" : "border-border"
           } ${uploading ? "pointer-events-none opacity-60" : ""}`}
@@ -334,7 +335,7 @@ export default function DataIngestion() {
         </Card>
 
         {/* Recent Uploads */}
-        <Card className="shadow-card border-border/50">
+        <Card data-tour="upload-history" className="shadow-card border-border/50">
           <CardHeader>
             <CardTitle className="font-heading text-base">Recent Uploads</CardTitle>
           </CardHeader>

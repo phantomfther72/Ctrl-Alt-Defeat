@@ -321,7 +321,7 @@ export default function Index() {
               </div>
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))", gap: 1, background: "#161B22", borderRadius: "10px 10px 0 0", marginTop: 20, overflow: "hidden" }} className="fade-up">
+            <div data-tour="dashboard-signals" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))", gap: 1, background: "#161B22", borderRadius: "10px 10px 0 0", marginTop: 20, overflow: "hidden" }} className="fade-up">
               {[
                 { label: "Total Delivered", value: totalDelivered.toLocaleString(), color: "#60A5FA" },
                 { label: "Total Sold", value: totalSold.toLocaleString(), color: "#10B981" },
@@ -342,7 +342,7 @@ export default function Index() {
               <div style={{ textAlign: "center", padding: 60, color: "#9CA3AF" }}>Loading data...</div>
             ) : (
               <>
-                <div className="fade-up-d1" style={{ background: "#fff", borderRadius: 12, padding: "20px 24px", marginBottom: 20, boxShadow: "0 1px 3px rgba(0,0,0,0.05)" }}>
+                <div data-tour="dashboard-chart" className="fade-up-d1" style={{ background: "#fff", borderRadius: 12, padding: "20px 24px", marginBottom: 20, boxShadow: "0 1px 3px rgba(0,0,0,0.05)" }}>
                   <h2 style={{ fontSize: 16, fontWeight: 700, color: "#111827", margin: "0 0 16px", fontFamily: "'DM Sans', sans-serif" }}>Network Demand Trend</h2>
                   <ResponsiveContainer width="100%" height={280}>
                     <AreaChart data={monthlySummary} margin={{ top: 5, right: 20, bottom: 5, left: 10 }}>

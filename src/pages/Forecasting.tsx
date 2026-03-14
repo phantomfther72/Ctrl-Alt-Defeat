@@ -234,7 +234,7 @@ export default function Forecasting() {
         ) : (
           <>
             {/* KPI Cards */}
-            <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+            <div data-tour="forecast-kpis" className="grid grid-cols-2 gap-4 lg:grid-cols-4">
               {kpis.map((kpi) => {
                 const Icon = kpi.icon;
                 return (
@@ -277,7 +277,7 @@ export default function Forecasting() {
             </div>
 
             {/* Regression Chart */}
-            <Card className="shadow-card border-border/50">
+            <Card data-tour="forecast-chart" className="shadow-card border-border/50">
               <CardHeader>
                 <CardTitle className="font-heading text-base">
                   Revenue — Actual vs. Regression Forecast
