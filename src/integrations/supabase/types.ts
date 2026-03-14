@@ -83,6 +83,36 @@ export type Database = {
         }
         Relationships: []
       }
+      distribution_events: {
+        Row: {
+          created_at: string
+          description: string | null
+          end_date: string
+          event_name: string
+          event_type: string
+          id: string
+          start_date: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          end_date: string
+          event_name: string
+          event_type?: string
+          id?: string
+          start_date: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          end_date?: string
+          event_name?: string
+          event_type?: string
+          id?: string
+          start_date?: string
+        }
+        Relationships: []
+      }
       file_uploads: {
         Row: {
           created_at: string
@@ -349,6 +379,42 @@ export type Database = {
           id?: string
           name?: string
           percentage?: number
+        }
+        Relationships: []
+      }
+      trend_analysis: {
+        Row: {
+          analysis_type: string
+          created_at: string
+          id: string
+          insight: string | null
+          location: string | null
+          metric_name: string
+          metric_value: number
+          period: string | null
+          trend_direction: string | null
+        }
+        Insert: {
+          analysis_type?: string
+          created_at?: string
+          id?: string
+          insight?: string | null
+          location?: string | null
+          metric_name: string
+          metric_value?: number
+          period?: string | null
+          trend_direction?: string | null
+        }
+        Update: {
+          analysis_type?: string
+          created_at?: string
+          id?: string
+          insight?: string | null
+          location?: string | null
+          metric_name?: string
+          metric_value?: number
+          period?: string | null
+          trend_direction?: string | null
         }
         Relationships: []
       }
