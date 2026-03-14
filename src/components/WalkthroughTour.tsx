@@ -3,9 +3,10 @@ import Joyride, { CallBackProps, STATUS, Step, ACTIONS, EVENTS } from "react-joy
 import { useLocation, useNavigate } from "react-router-dom";
 
 const TOUR_COMPLETED_KEY = "newera_tour_completed";
+const TOUR_STEP_KEY = "newera_tour_step";
+const TOUR_ACTIVE_KEY = "newera_tour_active";
 
 const tourSteps: (Step & { route?: string })[] = [
-  // Dashboard
   {
     target: "[data-tour='sidebar']",
     content: "Navigate between modules using the sidebar — Dashboard, Data Ingestion, Insights, Forecasting, and Admin.",
@@ -35,7 +36,6 @@ const tourSteps: (Step & { route?: string })[] = [
     placement: "top",
     route: "/",
   },
-  // Data Ingestion
   {
     target: "[data-tour='upload-area']",
     content: "Drag & drop or click to upload your distribution CSV files. Data is automatically parsed and processed into analytics.",
@@ -51,7 +51,6 @@ const tourSteps: (Step & { route?: string })[] = [
     placement: "top",
     route: "/data-ingestion",
   },
-  // Insights
   {
     target: "[data-tour='insights-generate']",
     content: "Click here to run AI analysis on your data. It generates actionable insights and recommendations automatically.",
@@ -60,7 +59,6 @@ const tourSteps: (Step & { route?: string })[] = [
     disableBeacon: true,
     route: "/insights",
   },
-  // Forecasting
   {
     target: "[data-tour='forecast-kpis']",
     content: "Key forecasting metrics: AI Confidence (R² score), Predicted Growth, Estimated Year-End revenue, and Peak Month.",
@@ -76,7 +74,6 @@ const tourSteps: (Step & { route?: string })[] = [
     placement: "top",
     route: "/forecasting",
   },
-  // Admin
   {
     target: "[data-tour='admin-section']",
     content: "Manage system settings, users, and data controls from the Admin panel. You're all set — enjoy exploring!",
@@ -93,15 +90,31 @@ export function WalkthroughTour() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Check if first time user
+  // On mount: check if tour should resume or start fresh
   useEffect(() => {
     const completed = localStorage.getItem(TOUR_COMPLETED_KEY);
-    if (!completed && location.pathname === "/") {
-      // Delay to let the page render
+    if (completed) return;
+
+    const active = localStorage.getItem(TOUR_ACTIVE_KEY);
+    const savedStep = localStorage.getItem(TOUR_STEP_KEY);
+
+    if (active === "true" && savedStep) {
+      // Resume tour at saved step
+      const idx = parseInt(savedStep, 10);
+      const step = tourSteps[idx];
+      if (step?.route === location.pathname) {
+        setStepIndex(idx);
+        const timer = setTimeout(() => setRun(true), 600);
+        return () => clearTimeout(timer);
+      }
+    } else if (location.pathname === "/") {
+      // First time — start tour
+      localStorage.setItem(TOUR_ACTIVE_KEY, "true");
+      localStorage.setItem(TOUR_STEP_KEY, "0");
       const timer = setTimeout(() => setRun(true), 800);
       return () => clearTimeout(timer);
     }
-  }, []);
+  }, [location.pathname]);
 
   const handleCallback = useCallback(
     (data: CallBackProps) => {
@@ -110,6 +123,8 @@ export function WalkthroughTour() {
       if (status === STATUS.FINISHED || status === STATUS.SKIPPED) {
         setRun(false);
         localStorage.setItem(TOUR_COMPLETED_KEY, "true");
+        localStorage.removeItem(TOUR_ACTIVE_KEY);
+        localStorage.removeItem(TOUR_STEP_KEY);
         return;
       }
 
@@ -118,12 +133,13 @@ export function WalkthroughTour() {
 
         if (nextIndex >= 0 && nextIndex < tourSteps.length) {
           const nextStep = tourSteps[nextIndex];
+          // Persist step for cross-page resume
+          localStorage.setItem(TOUR_STEP_KEY, String(nextIndex));
+
           if (nextStep.route && nextStep.route !== location.pathname) {
             setRun(false);
             navigate(nextStep.route);
-            setStepIndex(nextIndex);
-            // Resume after navigation
-            setTimeout(() => setRun(true), 600);
+            // The useEffect above will resume the tour on the new page
           } else {
             setStepIndex(nextIndex);
           }
@@ -200,5 +216,8 @@ export function WalkthroughTour() {
 /** Trigger tour manually (e.g. from a help button) */
 export function resetTour() {
   localStorage.removeItem(TOUR_COMPLETED_KEY);
+  localStorage.removeItem(TOUR_STEP_KEY);
+  localStorage.setItem(TOUR_ACTIVE_KEY, "true");
+  localStorage.setItem(TOUR_STEP_KEY, "0");
   window.location.reload();
 }
