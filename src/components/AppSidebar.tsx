@@ -3,7 +3,6 @@ import {
   LayoutDashboard,
   LineChart,
   Upload,
-  Users,
   Share2,
   Lightbulb,
   Settings,
