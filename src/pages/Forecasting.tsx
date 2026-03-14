@@ -307,7 +307,7 @@ export default function Forecasting() {
                         fontSize: 12,
                       }}
                       formatter={(value: any, name: string) => [
-                        `$${Number(value).toLocaleString()}`,
+                        `N$${Number(value).toLocaleString()}`,
                         name === "actual" ? "Actual" : name === "predicted" ? "Predicted" : "Regression Line",
                       ]}
                     />
