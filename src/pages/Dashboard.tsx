@@ -2,6 +2,8 @@ import { AppLayout } from "@/components/AppLayout";
 import { KpiCard } from "@/components/KpiCard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Eye, Users, TrendingUp, BarChart3 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import {
   AreaChart,
   Area,
@@ -15,23 +17,6 @@ import {
   Cell,
 } from "recharts";
 
-const trendData = [
-  { day: "Mon", pageviews: 3200, sessions: 1800 },
-  { day: "Tue", pageviews: 4100, sessions: 2200 },
-  { day: "Wed", pageviews: 3800, sessions: 2100 },
-  { day: "Thu", pageviews: 5200, sessions: 2900 },
-  { day: "Fri", pageviews: 4600, sessions: 2500 },
-  { day: "Sat", pageviews: 3100, sessions: 1700 },
-  { day: "Sun", pageviews: 2800, sessions: 1500 },
-];
-
-const sourceData = [
-  { name: "Organic Search", value: 42 },
-  { name: "Social Media", value: 28 },
-  { name: "Direct", value: 18 },
-  { name: "Referral", value: 12 },
-];
-
 const COLORS = [
   "hsl(243, 75%, 59%)",
   "hsl(167, 72%, 50%)",
@@ -39,15 +24,70 @@ const COLORS = [
   "hsl(340, 75%, 55%)",
 ];
 
+const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
 export default function Dashboard() {
+  const [trendData, setTrendData] = useState<{ day: string; pageviews: number; sessions: number }[]>([]);
+  const [sourceData, setSourceData] = useState<{ name: string; value: number }[]>([]);
+  const [kpis, setKpis] = useState({ pageviews: 0, users: 0, bounceRate: 0, avgSession: 0 });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchData() {
+      const [analyticsRes, sourcesRes] = await Promise.all([
+        supabase.from("analytics_data").select("*").order("date", { ascending: true }).limit(7),
+        supabase.from("traffic_sources").select("*").order("percentage", { ascending: false }),
+      ]);
+
+      if (analyticsRes.data && analyticsRes.data.length > 0) {
+        const trends = analyticsRes.data.map((row) => ({
+          day: dayNames[new Date(row.date).getUTCDay()],
+          pageviews: row.pageviews,
+          sessions: row.sessions,
+        }));
+        setTrendData(trends);
+
+        const totalPV = analyticsRes.data.reduce((s, r) => s + r.pageviews, 0);
+        const totalSessions = analyticsRes.data.reduce((s, r) => s + r.sessions, 0);
+        const avgBounce = analyticsRes.data.reduce((s, r) => s + (r.bounce_rate ?? 0), 0) / analyticsRes.data.length;
+        const avgDuration = analyticsRes.data.reduce((s, r) => s + (r.avg_session_duration ?? 0), 0) / analyticsRes.data.length;
+
+        setKpis({
+          pageviews: totalPV,
+          users: totalSessions,
+          bounceRate: Number(avgBounce.toFixed(1)),
+          avgSession: Math.round(avgDuration),
+        });
+      }
+
+      if (sourcesRes.data) {
+        setSourceData(sourcesRes.data.map((r) => ({ name: r.name, value: Number(r.percentage) })));
+      }
+
+      setLoading(false);
+    }
+    fetchData();
+  }, []);
+
+  const formatDuration = (seconds: number) => {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m}m ${s}s`;
+  };
+
+  const formatNumber = (n: number) => {
+    if (n >= 1000) return `${(n / 1000).toFixed(1)}K`;
+    return n.toString();
+  };
+
   return (
     <AppLayout>
       <div className="space-y-6">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <KpiCard title="Page Views" value="28.4K" change={15.2} icon={Eye} />
-          <KpiCard title="Active Users" value="3.2K" change={7.8} icon={Users} />
-          <KpiCard title="Bounce Rate" value="32.1%" change={-4.5} icon={TrendingUp} />
-          <KpiCard title="Avg. Session" value="4m 23s" change={11.2} icon={BarChart3} />
+          <KpiCard title="Page Views" value={loading ? "..." : formatNumber(kpis.pageviews)} change={15.2} icon={Eye} />
+          <KpiCard title="Active Users" value={loading ? "..." : formatNumber(kpis.users)} change={7.8} icon={Users} />
+          <KpiCard title="Bounce Rate" value={loading ? "..." : `${kpis.bounceRate}%`} change={-4.5} icon={TrendingUp} />
+          <KpiCard title="Avg. Session" value={loading ? "..." : formatDuration(kpis.avgSession)} change={11.2} icon={BarChart3} />
         </div>
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">

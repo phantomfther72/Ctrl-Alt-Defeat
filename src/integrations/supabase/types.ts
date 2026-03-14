@@ -14,7 +14,162 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      analytics_data: {
+        Row: {
+          avg_session_duration: number | null
+          bounce_rate: number | null
+          created_at: string
+          date: string
+          id: string
+          pageviews: number
+          sessions: number
+          source: string | null
+        }
+        Insert: {
+          avg_session_duration?: number | null
+          bounce_rate?: number | null
+          created_at?: string
+          date: string
+          id?: string
+          pageviews?: number
+          sessions?: number
+          source?: string | null
+        }
+        Update: {
+          avg_session_duration?: number | null
+          bounce_rate?: number | null
+          created_at?: string
+          date?: string
+          id?: string
+          pageviews?: number
+          sessions?: number
+          source?: string | null
+        }
+        Relationships: []
+      }
+      file_uploads: {
+        Row: {
+          created_at: string
+          error_message: string | null
+          file_name: string
+          file_size: number | null
+          file_type: string | null
+          id: string
+          row_count: number | null
+          status: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          error_message?: string | null
+          file_name: string
+          file_size?: number | null
+          file_type?: string | null
+          id?: string
+          row_count?: number | null
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          error_message?: string | null
+          file_name?: string
+          file_size?: number | null
+          file_type?: string | null
+          id?: string
+          row_count?: number | null
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      forecast_data: {
+        Row: {
+          actual: number | null
+          created_at: string
+          forecast: number | null
+          id: string
+          month: string
+        }
+        Insert: {
+          actual?: number | null
+          created_at?: string
+          forecast?: number | null
+          id?: string
+          month: string
+        }
+        Update: {
+          actual?: number | null
+          created_at?: string
+          forecast?: number | null
+          id?: string
+          month?: string
+        }
+        Relationships: []
+      }
+      insights: {
+        Row: {
+          category: string | null
+          created_at: string
+          description: string
+          id: string
+          is_active: boolean
+          metric: string | null
+          title: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          description: string
+          id?: string
+          is_active?: boolean
+          metric?: string | null
+          title: string
+          type?: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          description?: string
+          id?: string
+          is_active?: boolean
+          metric?: string | null
+          title?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      traffic_sources: {
+        Row: {
+          created_at: string
+          date: string
+          id: string
+          name: string
+          percentage: number
+        }
+        Insert: {
+          created_at?: string
+          date?: string
+          id?: string
+          name: string
+          percentage?: number
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          id?: string
+          name?: string
+          percentage?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

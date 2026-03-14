@@ -1,65 +1,73 @@
 import { AppLayout } from "@/components/AppLayout";
 import { InsightCard } from "@/components/InsightCard";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { Skeleton } from "@/components/ui/skeleton";
 
-const insights = [
-  {
-    title: "Content Velocity Impact",
-    description: "Publishing 3+ articles per day correlates with 28% higher engagement rates compared to 1-2 articles.",
-    type: "positive" as const,
-    metric: "+28%",
-    category: "Content",
-  },
-  {
-    title: "Peak Engagement Hours",
-    description: "Content published between 9-11 AM EST receives 45% more initial engagement than other time slots.",
-    type: "positive" as const,
-    metric: "9-11 AM",
-    category: "Timing",
-  },
-  {
-    title: "Mobile Bounce Rate Rising",
-    description: "Mobile users show a 15% increase in bounce rate. Page load times on mobile have increased by 0.8s.",
-    type: "negative" as const,
-    metric: "+15%",
-    category: "Performance",
-  },
-  {
-    title: "Social Referral Decline",
-    description: "Traffic from social platforms decreased 8% this month. Algorithm changes may be affecting reach.",
-    type: "warning" as const,
-    metric: "-8%",
-    category: "Distribution",
-  },
-  {
-    title: "Newsletter Effectiveness",
-    description: "Email subscribers have 3.2x higher retention than social media visitors. Consider investing more in email growth.",
-    type: "neutral" as const,
-    metric: "3.2x",
-    category: "Audience",
-  },
-  {
-    title: "Video Content Opportunity",
-    description: "Articles with embedded video see 52% longer average session duration. Only 12% of content includes video.",
-    type: "positive" as const,
-    metric: "+52%",
-    category: "Content",
-  },
-];
+type InsightType = "positive" | "negative" | "warning" | "neutral";
+
+interface Insight {
+  id: string;
+  title: string;
+  description: string;
+  type: InsightType;
+  metric: string | null;
+  category: string | null;
+}
 
 export default function Insights() {
+  const [insights, setInsights] = useState<Insight[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchInsights() {
+      const { data } = await supabase
+        .from("insights")
+        .select("*")
+        .eq("is_active", true)
+        .order("created_at", { ascending: false });
+
+      if (data) {
+        setInsights(
+          data.map((r) => ({
+            ...r,
+            type: (["positive", "negative", "warning", "neutral"].includes(r.type) ? r.type : "neutral") as InsightType,
+          }))
+        );
+      }
+      setLoading(false);
+    }
+    fetchInsights();
+  }, []);
+
   return (
     <AppLayout>
       <div className="space-y-6">
-        <div>
-          <p className="text-sm text-muted-foreground">
-            AI-generated insights based on your data patterns and trends.
-          </p>
-        </div>
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {insights.map((insight, i) => (
-            <InsightCard key={i} {...insight} />
-          ))}
-        </div>
+        <p className="text-sm text-muted-foreground">
+          AI-generated insights based on your data patterns and trends.
+        </p>
+        {loading ? (
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {[...Array(6)].map((_, i) => (
+              <Skeleton key={i} className="h-40 rounded-xl" />
+            ))}
+          </div>
+        ) : insights.length === 0 ? (
+          <p className="text-sm text-muted-foreground">No insights available yet.</p>
+        ) : (
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {insights.map((insight) => (
+              <InsightCard
+                key={insight.id}
+                title={insight.title}
+                description={insight.description}
+                type={insight.type}
+                metric={insight.metric ?? undefined}
+                category={insight.category ?? undefined}
+              />
+            ))}
+          </div>
+        )}
       </div>
     </AppLayout>
   );
