@@ -47,6 +47,42 @@ export type Database = {
         }
         Relationships: []
       }
+      clean_data: {
+        Row: {
+          category: string | null
+          created_at: string
+          id: string
+          month: string
+          quantity_returned: number | null
+          quantity_sold: number | null
+          revenue: number | null
+          shop_id: string
+          shop_name: string | null
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          id?: string
+          month: string
+          quantity_returned?: number | null
+          quantity_sold?: number | null
+          revenue?: number | null
+          shop_id: string
+          shop_name?: string | null
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          id?: string
+          month?: string
+          quantity_returned?: number | null
+          quantity_sold?: number | null
+          revenue?: number | null
+          shop_id?: string
+          shop_name?: string | null
+        }
+        Relationships: []
+      }
       file_uploads: {
         Row: {
           created_at: string
@@ -161,6 +197,69 @@ export type Database = {
         }
         Relationships: []
       }
+      model_metrics: {
+        Row: {
+          created_at: string
+          evaluated_at: string
+          id: string
+          metric_name: string
+          metric_value: number
+          model_version: string | null
+        }
+        Insert: {
+          created_at?: string
+          evaluated_at?: string
+          id?: string
+          metric_name: string
+          metric_value?: number
+          model_version?: string | null
+        }
+        Update: {
+          created_at?: string
+          evaluated_at?: string
+          id?: string
+          metric_name?: string
+          metric_value?: number
+          model_version?: string | null
+        }
+        Relationships: []
+      }
+      monthly_summary: {
+        Row: {
+          created_at: string
+          forecast_revenue: number | null
+          id: string
+          month: string
+          return_rate_pct: number | null
+          revenue: number | null
+          sell_through_pct: number | null
+          total_returns: number
+          total_sales: number
+        }
+        Insert: {
+          created_at?: string
+          forecast_revenue?: number | null
+          id?: string
+          month: string
+          return_rate_pct?: number | null
+          revenue?: number | null
+          sell_through_pct?: number | null
+          total_returns?: number
+          total_sales?: number
+        }
+        Update: {
+          created_at?: string
+          forecast_revenue?: number | null
+          id?: string
+          month?: string
+          return_rate_pct?: number | null
+          revenue?: number | null
+          sell_through_pct?: number | null
+          total_returns?: number
+          total_sales?: number
+        }
+        Relationships: []
+      }
       parsed_data: {
         Row: {
           created_at: string
@@ -192,6 +291,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      predictions: {
+        Row: {
+          actual_returns: number | null
+          actual_sales: number | null
+          created_at: string
+          id: string
+          month: string
+          predicted_returns: number | null
+          predicted_sales: number
+          shop_id: string
+          shop_name: string | null
+        }
+        Insert: {
+          actual_returns?: number | null
+          actual_sales?: number | null
+          created_at?: string
+          id?: string
+          month: string
+          predicted_returns?: number | null
+          predicted_sales?: number
+          shop_id: string
+          shop_name?: string | null
+        }
+        Update: {
+          actual_returns?: number | null
+          actual_sales?: number | null
+          created_at?: string
+          id?: string
+          month?: string
+          predicted_returns?: number | null
+          predicted_sales?: number
+          shop_id?: string
+          shop_name?: string | null
+        }
+        Relationships: []
       }
       traffic_sources: {
         Row: {
