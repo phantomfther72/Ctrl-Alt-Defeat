@@ -233,17 +233,14 @@ const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/analyze-trends`;
 
 | Route              | Page Component    | Auth Required | Description                              |
 |--------------------|-------------------|---------------|------------------------------------------|
-| `/`                | `Index.tsx`       | No            | Landing / Distribution Dashboard         |
+| `/`                | `Index.tsx`       | No            | Distribution Dashboard + AI Trend Analysis |
 | `/login`           | `Login.tsx`       | No            | User login                               |
 | `/signup`          | `Signup.tsx`      | No            | User registration                        |
 | `/forgot-password` | `ForgotPassword`  | No            | Password recovery                        |
 | `/reset-password`  | `ResetPassword`   | No            | Password reset (from email link)         |
-| `/dashboard`       | `Dashboard.tsx`   | Yes           | Secondary dashboard                      |
 | `/data-ingestion`  | `DataIngestion`   | Yes           | Upload & process data files              |
 | `/insights`        | `Insights.tsx`    | Yes           | AI-generated business insights           |
 | `/forecasting`     | `Forecasting.tsx` | Yes           | Demand & revenue forecasting             |
-| `/demand-trends`   | `DemandTrends`    | Yes           | Trend analysis with AI                   |
-| `/distribution`    | `Distribution`    | Yes           | Distribution event management            |
 | `/ai-monitor`      | `AiMonitor.tsx`   | Yes           | AI model performance monitoring          |
 | `/supply-ai`       | `SupplyAI.tsx`    | Yes           | AI Supply Intelligence advisor           |
 | `/admin`           | `Admin.tsx`       | Yes           | Administration panel                     |
@@ -252,8 +249,13 @@ const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/analyze-trends`;
 ### Sidebar Navigation
 
 Defined in `AppSidebar.tsx` with two groups:
-- **Analytics**: Dashboard, Data Ingestion, Insights, Forecasting, Demand Trends, Distribution, AI Monitor, Supply AI
+- **Analytics**: Dashboard, Data Ingestion, Insights, Forecasting, AI Monitor, Supply AI
 - **System**: Admin
+
+### Removed Pages (v1.1)
+- `Dashboard.tsx` — Used `analytics_data`/`traffic_sources` (web analytics unrelated to distribution domain)
+- `Distribution.tsx` — 100% hardcoded mock data for email/social channels, not connected to any database
+- `DemandTrends.tsx` — Merged into `Index.tsx` (identical charts + AI analysis consolidated)
 
 ---
 
