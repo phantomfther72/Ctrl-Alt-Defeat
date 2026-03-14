@@ -321,7 +321,7 @@ export default function Index() {
               </div>
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))", gap: 1, background: "#161B22", borderRadius: "10px 10px 0 0", marginTop: 20, overflow: "hidden" }} className="fade-up">
+            <div data-tour="dashboard-signals" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))", gap: 1, background: "#161B22", borderRadius: "10px 10px 0 0", marginTop: 20, overflow: "hidden" }} className="fade-up">
               {[
                 { label: "Total Delivered", value: totalDelivered.toLocaleString(), color: "#60A5FA" },
                 { label: "Total Sold", value: totalSold.toLocaleString(), color: "#10B981" },
