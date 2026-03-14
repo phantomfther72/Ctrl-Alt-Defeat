@@ -427,6 +427,7 @@ export default function Index() {
           </div>
         </div>
       </SidebarInset>
+      <WalkthroughTour />
     </SidebarProvider>
   );
 }
