@@ -7,6 +7,7 @@ import {
   Lightbulb,
   Settings,
   Brain,
+  Newspaper,
 } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
@@ -27,7 +28,7 @@ const mainNavItems = [
   { title: "Data Ingestion", url: "/data-ingestion", icon: Upload },
   { title: "Insights", url: "/insights", icon: Lightbulb },
   { title: "Forecasting", url: "/forecasting", icon: LineChart },
-  
+  { title: "Demand Trends", url: "/demand-trends", icon: Newspaper },
   { title: "Distribution", url: "/distribution", icon: Share2 },
   { title: "AI Monitor", url: "/ai-monitor", icon: Brain },
 ];
