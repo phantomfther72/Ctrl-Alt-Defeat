@@ -381,7 +381,7 @@ export default function Forecasting() {
                               {row.actual !== null ? `N$${row.actual.toLocaleString()}` : "—"}
                             </td>
                             <td className="py-2 px-3 text-right text-muted-foreground">
-                              ${row.regression.toLocaleString()}
+                              N${row.regression.toLocaleString()}
                             </td>
                             <td className="py-2 px-3 text-right text-emerald-500">
                               {row.predicted !== null ? `$${row.predicted.toLocaleString()}` : "—"}
