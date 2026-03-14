@@ -47,6 +47,14 @@ export function TopBar() {
             className="w-64 pl-9 bg-secondary border-none text-sm"
           />
         </div>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button variant="ghost" size="icon" onClick={resetTour}>
+              <HelpCircle className="h-4 w-4" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>Restart Tour</TooltipContent>
+        </Tooltip>
         <Button variant="ghost" size="icon" className="relative">
           <Bell className="h-4 w-4" />
           <span className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-primary" />
