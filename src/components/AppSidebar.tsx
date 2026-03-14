@@ -3,7 +3,6 @@ import {
   LayoutDashboard,
   LineChart,
   Upload,
-  Share2,
   Lightbulb,
   Settings,
   Brain,
@@ -28,8 +27,6 @@ const mainNavItems = [
   { title: "Data Ingestion", url: "/data-ingestion", icon: Upload },
   { title: "Insights", url: "/insights", icon: Lightbulb },
   { title: "Forecasting", url: "/forecasting", icon: LineChart },
-  { title: "Demand Trends", url: "/demand-trends", icon: Newspaper },
-  { title: "Distribution", url: "/distribution", icon: Share2 },
   { title: "AI Monitor", url: "/ai-monitor", icon: Brain },
   { title: "Supply AI", url: "/supply-ai", icon: Newspaper },
 ];
