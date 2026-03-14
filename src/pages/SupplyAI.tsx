@@ -347,6 +347,17 @@ export default function SupplyAI() {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<"all" | "growing" | "declining" | "increase" | "reduce">("all");
 
+  const monthOrder = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const sortByMonth = (a: string, b: string) => {
+    // Handle formats like "Apr", "Apr 25", "2025-04", etc.
+    const getIdx = (m: string) => {
+      const short = m.slice(0, 3);
+      const idx = monthOrder.indexOf(short);
+      return idx >= 0 ? idx : 0;
+    };
+    return getIdx(a) - getIdx(b);
+  };
+
   const fetchData = useCallback(async () => {
     try {
       // Fetch monthly summary
@@ -354,11 +365,13 @@ export default function SupplyAI() {
         .from("monthly_summary")
         .select("*")
         .order("month", { ascending: true })
-        .limit(6);
+        .limit(12);
 
       if (monthlyRaw && monthlyRaw.length > 0) {
+        const sorted = [...monthlyRaw].sort((a, b) => sortByMonth(a.month, b.month));
+        const last6 = sorted.slice(-6);
         setMonthlySummary(
-          monthlyRaw.map((r) => ({
+          last6.map((r) => ({
             month: r.month,
             delivered: Number(r.total_sales) + Number(r.total_returns),
             sold: Number(r.total_sales),
