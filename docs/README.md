@@ -173,7 +173,6 @@ The platform serves a newspaper distribution company operating across multiple r
 
 | Table                | Purpose                                      | Key Columns                                              |
 |----------------------|----------------------------------------------|----------------------------------------------------------|
-| `analytics_data`     | Web/app analytics metrics                    | date, pageviews, sessions, bounce_rate, source           |
 | `clean_data`         | Cleaned distribution records per outlet      | shop_id, shop_name, month, quantity_sold, quantity_returned, revenue, category |
 | `distribution_events`| Holidays, campaigns, events affecting demand | event_name, event_type, start_date, end_date, description|
 | `file_uploads`       | Uploaded file tracking                       | file_name, status, user_id, file_size, row_count         |
@@ -183,8 +182,9 @@ The platform serves a newspaper distribution company operating across multiple r
 | `monthly_summary`    | Aggregated monthly sales/returns             | month, total_sales, total_returns, revenue, sell_through_pct, return_rate_pct |
 | `parsed_data`        | Raw parsed data from uploads                 | file_upload_id, row_index, data (JSONB)                  |
 | `predictions`        | Per-outlet sales predictions                 | shop_id, shop_name, month, predicted_sales, actual_sales |
-| `traffic_sources`    | Website traffic source breakdown             | name, percentage, date                                   |
 | `trend_analysis`     | Computed trend metrics                       | analysis_type, metric_name, metric_value, location, trend_direction, insight |
+
+> **Note:** `analytics_data` and `traffic_sources` tables exist in the schema but are no longer used by any page. They were part of the removed Dashboard.tsx (web analytics). They can be dropped in a future migration.
 
 ### Row-Level Security (RLS)
 
