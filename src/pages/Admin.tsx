@@ -11,7 +11,7 @@ import { Shield, Database, Key, RefreshCw } from "lucide-react";
 export default function Admin() {
   return (
     <AppLayout>
-      <div className="space-y-6 max-w-3xl">
+      <div data-tour="admin-section" className="space-y-6 max-w-3xl">
         <p className="text-sm text-muted-foreground">
           Manage platform settings, API keys, and system configuration.
         </p>

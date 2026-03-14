@@ -234,7 +234,7 @@ export default function Forecasting() {
         ) : (
           <>
             {/* KPI Cards */}
-            <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+            <div data-tour="forecast-kpis" className="grid grid-cols-2 gap-4 lg:grid-cols-4">
               {kpis.map((kpi) => {
                 const Icon = kpi.icon;
                 return (
