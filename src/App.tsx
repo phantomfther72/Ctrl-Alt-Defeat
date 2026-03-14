@@ -12,6 +12,7 @@ import Insights from "./pages/Insights.tsx";
 import Forecasting from "./pages/Forecasting.tsx";
 import Audience from "./pages/Audience.tsx";
 import Distribution from "./pages/Distribution.tsx";
+import AiMonitor from "./pages/AiMonitor.tsx";
 import Admin from "./pages/Admin.tsx";
 import Login from "./pages/Login.tsx";
 import Signup from "./pages/Signup.tsx";
