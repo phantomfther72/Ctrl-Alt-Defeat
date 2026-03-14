@@ -1,12 +1,15 @@
-import { Bell, Search } from "lucide-react";
-import { useLocation } from "react-router-dom";
+import { Bell, Search, LogOut } from "lucide-react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { SidebarTrigger } from "@/components/ui/sidebar";
+import { useAuth } from "@/contexts/AuthContext";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 const pageTitles: Record<string, string> = {
   "/": "Dashboard",
+  "/dashboard": "Dashboard",
   "/data-ingestion": "Data Ingestion",
   "/insights": "Insights",
   "/forecasting": "Forecasting",
@@ -17,7 +20,18 @@ const pageTitles: Record<string, string> = {
 
 export function TopBar() {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, signOut } = useAuth();
   const title = pageTitles[location.pathname] || "Dashboard";
+
+  const initials = user?.email
+    ? user.email.substring(0, 2).toUpperCase()
+    : "NE";
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/login");
+  };
 
   return (
     <header className="flex h-16 items-center justify-between border-b border-border bg-card px-6">
@@ -39,9 +53,17 @@ export function TopBar() {
         </Button>
         <Avatar className="h-8 w-8">
           <AvatarFallback className="bg-primary text-primary-foreground text-xs font-medium">
-            NE
+            {initials}
           </AvatarFallback>
         </Avatar>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button variant="ghost" size="icon" onClick={handleSignOut}>
+              <LogOut className="h-4 w-4" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>Sign out</TooltipContent>
+        </Tooltip>
       </div>
     </header>
   );
