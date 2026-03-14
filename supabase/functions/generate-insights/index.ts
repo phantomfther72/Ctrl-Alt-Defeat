@@ -21,15 +21,17 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     // Fetch recent analytics data
-    const [analyticsRes, sourcesRes, uploadsRes] = await Promise.all([
+    const [analyticsRes, sourcesRes, uploadsRes, forecastRes] = await Promise.all([
       supabase.from("analytics_data").select("*").order("date", { ascending: false }).limit(14),
       supabase.from("traffic_sources").select("*").order("date", { ascending: false }).limit(10),
       supabase.from("file_uploads").select("*").order("created_at", { ascending: false }).limit(10),
+      supabase.from("forecast_data").select("*").order("month", { ascending: false }).limit(12),
     ]);
 
     const analyticsData = analyticsRes.data || [];
     const trafficSources = sourcesRes.data || [];
     const fileUploads = uploadsRes.data || [];
+    const forecastData = forecastRes.data || [];
 
     const dataContext = `
 Analytics Data (last 14 days):
@@ -40,18 +42,19 @@ ${JSON.stringify(trafficSources, null, 2)}
 
 Recent File Uploads:
 ${JSON.stringify(fileUploads, null, 2)}
+
+Forecast Data:
+${JSON.stringify(forecastData, null, 2)}
     `.trim();
 
-    const systemPrompt = `You are a data analyst for a content analytics platform called "New Era Insights". 
-Analyze the provided data and generate actionable insights. Each insight should identify a meaningful pattern, trend, or anomaly.
+    const systemPrompt = `You are a senior business intelligence analyst for a content analytics platform called "New Era Insights".
+Analyze the provided data and generate two types of output:
 
-Return insights using the suggest_insights tool. Generate 3-5 insights based on the data provided.
-Each insight must have:
-- title: Short, descriptive title (max 60 chars)
-- description: 1-2 sentence explanation of the finding and its implication
-- type: one of "positive", "negative", "warning", "neutral"
-- metric: A key number or percentage related to the insight
-- category: one of "Content", "Timing", "Performance", "Distribution", "Audience"`;
+1. **Insights** (3-5): Identify meaningful patterns, trends, or anomalies in the data. Each insight should be a factual observation.
+
+2. **Recommendations** (2-4): Provide actionable business intelligence recommendations. Each recommendation should be a specific, strategic action the user can take to improve their metrics. Include expected impact and priority level.
+
+Use the generate_analysis tool to return both insights and recommendations.`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -63,14 +66,14 @@ Each insight must have:
         model: "google/gemini-3-flash-preview",
         messages: [
           { role: "system", content: systemPrompt },
-          { role: "user", content: `Analyze this data and generate insights:\n\n${dataContext}` },
+          { role: "user", content: `Analyze this data and generate insights and business intelligence recommendations:\n\n${dataContext}` },
         ],
         tools: [
           {
             type: "function",
             function: {
-              name: "suggest_insights",
-              description: "Return 3-5 data-driven insights based on analytics data.",
+              name: "generate_analysis",
+              description: "Return data-driven insights and actionable BI recommendations.",
               parameters: {
                 type: "object",
                 properties: {
@@ -89,14 +92,29 @@ Each insight must have:
                       additionalProperties: false,
                     },
                   },
+                  recommendations: {
+                    type: "array",
+                    items: {
+                      type: "object",
+                      properties: {
+                        title: { type: "string", description: "Short action-oriented title (max 60 chars)" },
+                        description: { type: "string", description: "Detailed explanation of the recommended action and why" },
+                        expected_impact: { type: "string", description: "Quantified expected outcome, e.g. '+15% engagement'" },
+                        priority: { type: "string", enum: ["high", "medium", "low"] },
+                        category: { type: "string", enum: ["Content Strategy", "Audience Growth", "Revenue", "Operations", "Distribution"] },
+                      },
+                      required: ["title", "description", "expected_impact", "priority", "category"],
+                      additionalProperties: false,
+                    },
+                  },
                 },
-                required: ["insights"],
+                required: ["insights", "recommendations"],
                 additionalProperties: false,
               },
             },
           },
         ],
-        tool_choice: { type: "function", function: { name: "suggest_insights" } },
+        tool_choice: { type: "function", function: { name: "generate_analysis" } },
       }),
     });
 
@@ -127,8 +145,9 @@ Each insight must have:
 
     const parsed = JSON.parse(toolCall.function.arguments);
     const newInsights = parsed.insights || [];
+    const newRecommendations = parsed.recommendations || [];
 
-    // Insert generated insights into the database
+    // Insert insights
     if (newInsights.length > 0) {
       const { error: insertError } = await supabase.from("insights").insert(
         newInsights.map((insight: any) => ({
@@ -140,15 +159,38 @@ Each insight must have:
           is_active: true,
         }))
       );
-
       if (insertError) {
-        console.error("Insert error:", insertError);
+        console.error("Insert insights error:", insertError);
         throw new Error(`Failed to save insights: ${insertError.message}`);
       }
     }
 
+    // Insert recommendations as insights with category prefix "Rec:"
+    if (newRecommendations.length > 0) {
+      const { error: recError } = await supabase.from("insights").insert(
+        newRecommendations.map((rec: any) => ({
+          title: rec.title,
+          description: rec.description,
+          type: rec.priority === "high" ? "warning" : rec.priority === "medium" ? "neutral" : "positive",
+          metric: rec.expected_impact,
+          category: `Rec:${rec.category}`,
+          is_active: true,
+        }))
+      );
+      if (recError) {
+        console.error("Insert recommendations error:", recError);
+        throw new Error(`Failed to save recommendations: ${recError.message}`);
+      }
+    }
+
     return new Response(
-      JSON.stringify({ success: true, count: newInsights.length, insights: newInsights }),
+      JSON.stringify({
+        success: true,
+        count: newInsights.length,
+        recommendations_count: newRecommendations.length,
+        insights: newInsights,
+        recommendations: newRecommendations,
+      }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
