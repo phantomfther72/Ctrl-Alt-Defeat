@@ -9,7 +9,7 @@ import Index from "./pages/Index.tsx";
 import DataIngestion from "./pages/DataIngestion.tsx";
 import Insights from "./pages/Insights.tsx";
 import Forecasting from "./pages/Forecasting.tsx";
-import AiMonitor from "./pages/AiMonitor.tsx";
+
 import Admin from "./pages/Admin.tsx";
 import Login from "./pages/Login.tsx";
 import Signup from "./pages/Signup.tsx";
@@ -36,7 +36,7 @@ const App = () => (
             <Route path="/data-ingestion" element={<ProtectedRoute><DataIngestion /></ProtectedRoute>} />
             <Route path="/insights" element={<ProtectedRoute><Insights /></ProtectedRoute>} />
             <Route path="/forecasting" element={<ProtectedRoute><Forecasting /></ProtectedRoute>} />
-            <Route path="/ai-monitor" element={<ProtectedRoute><AiMonitor /></ProtectedRoute>} />
+            
             <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
             
             <Route path="*" element={<NotFound />} />
