@@ -192,10 +192,10 @@ export default function Forecasting() {
         {
           label: "Est. Year-End",
           value: analysis.estYearEnd >= 1_000_000
-            ? `$${(analysis.estYearEnd / 1_000_000).toFixed(2)}M`
+            ? `N$${(analysis.estYearEnd / 1_000_000).toFixed(2)}M`
             : analysis.estYearEnd >= 1000
-              ? `$${(analysis.estYearEnd / 1000).toFixed(1)}K`
-              : `$${Math.round(analysis.estYearEnd)}`,
+              ? `N$${(analysis.estYearEnd / 1000).toFixed(1)}K`
+              : `N$${Math.round(analysis.estYearEnd)}`,
           icon: BarChart3,
           description: analysis.isProfit ? "Projected Profit" : "Projected Loss",
           status: analysis.isProfit ? "positive" : "negative",
