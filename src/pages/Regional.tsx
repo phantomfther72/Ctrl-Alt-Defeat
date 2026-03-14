@@ -1,66 +1,52 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useMemo } from "react";
 import {
-  MapPin,
-  TrendingUp,
-  TrendingDown,
-  Minus,
-  Search,
-  ArrowUpDown,
-  BarChart3,
+  MapPin, TrendingUp, TrendingDown, Minus, Search, ArrowUpDown,
+  BarChart3, Brain, Shield, Rocket, AlertTriangle, CheckCircle,
+  Activity, Target, Zap, Eye, ChevronDown, ChevronUp,
 } from "lucide-react";
 import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
-  Legend,
-  RadarChart,
-  PolarGrid,
-  PolarAngleAxis,
-  PolarRadiusAxis,
-  Radar,
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  PieChart, Pie, Cell, Legend, RadarChart, PolarGrid, PolarAngleAxis,
+  PolarRadiusAxis, Radar, ScatterChart, Scatter, ZAxis,
 } from "recharts";
-import { supabase } from "@/integrations/supabase/client";
 import { AppLayout } from "@/components/AppLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { useRegionalAI, type RegionAnalysis } from "@/hooks/useRegionalAI";
 
-type Trend = "growing" | "declining" | "stable";
-type SortKey = "sold" | "returned" | "revenue" | "returnRate" | "sellThrough";
+type SortKey = "demand_score" | "efficiency_score" | "ai_confidence";
 
-interface RegionStat {
-  location: string;
-  sold: number;
-  returned: number;
-  delivered: number;
-  revenue: number;
-  returnRate: number;
-  sellThrough: number;
-  trend: Trend;
-  months: string[];
-  monthlyBreakdown: { month: string; sold: number; returned: number; revenue: number }[];
-}
+const SUPPLY_COLORS: Record<string, string> = {
+  "over-supplied": "hsl(0 72% 55%)",
+  "balanced": "hsl(152 60% 42%)",
+  "under-supplied": "hsl(32 95% 55%)",
+};
+const DEMAND_COLORS: Record<string, string> = {
+  high: "hsl(152 60% 42%)",
+  medium: "hsl(32 95% 55%)",
+  low: "hsl(0 72% 55%)",
+};
+const ACTION_COLORS: Record<string, string> = {
+  increase_supply: "hsl(200 80% 50%)",
+  maintain: "hsl(152 60% 42%)",
+  reduce_supply: "hsl(0 72% 55%)",
+  investigate: "hsl(32 95% 55%)",
+};
+const RISK_COLORS: Record<string, string> = {
+  high: "hsl(0 72% 55%)",
+  medium: "hsl(32 95% 55%)",
+  low: "hsl(152 60% 42%)",
+};
 
-function deriveTrend(returnRate: number, sellThrough: number): Trend {
-  if (returnRate < 15 && sellThrough > 85) return "growing";
-  if (returnRate > 35 || sellThrough < 60) return "declining";
-  return "stable";
-}
-
-const COLORS = ["#10B981", "#3B82F6", "#F59E0B", "#EF4444", "#8B5CF6", "#EC4899", "#06B6D4", "#F97316"];
-
-function CustomTooltip({ active, payload, label }: any) {
+function ChartTooltip({ active, payload, label }: any) {
   if (!active || !payload?.length) return null;
   return (
-    <div style={{ background: "#1F2937", border: "none", borderRadius: 8, padding: "10px 14px", color: "#F9FAFB", fontSize: 13 }}>
-      <p style={{ fontWeight: 600, marginBottom: 6 }}>{label}</p>
+    <div className="rounded-lg border border-border bg-card p-3 text-card-foreground shadow-elevated text-xs">
+      <p className="font-semibold mb-1.5">{label}</p>
       {payload.map((p: any, i: number) => (
-        <p key={i} style={{ color: p.color || p.fill, margin: "2px 0" }}>
+        <p key={i} style={{ color: p.color || p.fill }} className="my-0.5">
           {p.name}: {typeof p.value === "number" ? p.value.toLocaleString() : p.value}
         </p>
       ))}
@@ -69,127 +55,59 @@ function CustomTooltip({ active, payload, label }: any) {
 }
 
 export default function Regional() {
-  const [regions, setRegions] = useState<RegionStat[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { analysis, locationStats, loading, hasRun, runAnalysis } = useRegionalAI();
   const [search, setSearch] = useState("");
-  const [sortBy, setSortBy] = useState<SortKey>("sold");
+  const [sortBy, setSortBy] = useState<SortKey>("demand_score");
   const [sortAsc, setSortAsc] = useState(false);
+  const [expandedRow, setExpandedRow] = useState<string | null>(null);
 
-  const fetchData = useCallback(async () => {
-    setLoading(true);
-    try {
-      const { data: cleanRaw } = await supabase
-        .from("clean_data")
-        .select("shop_name, shop_id, quantity_sold, quantity_returned, revenue, month");
+  // Derived data from AI analysis
+  const regions = analysis?.region_analyses || [];
 
-      if (cleanRaw && cleanRaw.length > 0) {
-        const agg: Record<string, RegionStat> = {};
-        for (const r of cleanRaw) {
-          const loc = r.shop_name || r.shop_id;
-          if (!agg[loc]) {
-            agg[loc] = {
-              location: loc,
-              sold: 0,
-              returned: 0,
-              delivered: 0,
-              revenue: 0,
-              returnRate: 0,
-              sellThrough: 0,
-              trend: "stable",
-              months: [],
-              monthlyBreakdown: [],
-            };
-          }
-          agg[loc].sold += r.quantity_sold || 0;
-          agg[loc].returned += r.quantity_returned || 0;
-          agg[loc].revenue += Number(r.revenue || 0);
-          if (r.month && !agg[loc].months.includes(r.month)) {
-            agg[loc].months.push(r.month);
-          }
-        }
+  const actionDistribution = useMemo(() => {
+    const counts: Record<string, number> = {};
+    regions.forEach((r) => { counts[r.recommended_action] = (counts[r.recommended_action] || 0) + 1; });
+    return Object.entries(counts).map(([name, value]) => ({
+      name: name.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()),
+      value,
+      color: ACTION_COLORS[name] || "hsl(220 10% 46%)",
+    }));
+  }, [regions]);
 
-        // Build monthly breakdown per location
-        const monthlyMap: Record<string, Record<string, { sold: number; returned: number; revenue: number }>> = {};
-        for (const r of cleanRaw) {
-          const loc = r.shop_name || r.shop_id;
-          if (!monthlyMap[loc]) monthlyMap[loc] = {};
-          if (!monthlyMap[loc][r.month]) monthlyMap[loc][r.month] = { sold: 0, returned: 0, revenue: 0 };
-          monthlyMap[loc][r.month].sold += r.quantity_sold || 0;
-          monthlyMap[loc][r.month].returned += r.quantity_returned || 0;
-          monthlyMap[loc][r.month].revenue += Number(r.revenue || 0);
-        }
+  const supplyDistribution = useMemo(() => {
+    const counts: Record<string, number> = {};
+    regions.forEach((r) => { counts[r.supply_status] = (counts[r.supply_status] || 0) + 1; });
+    return Object.entries(counts).map(([name, value]) => ({
+      name: name.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()),
+      value,
+      color: SUPPLY_COLORS[name] || "hsl(220 10% 46%)",
+    }));
+  }, [regions]);
 
-        const stats = Object.values(agg).map((l) => {
-          l.delivered = l.sold + l.returned;
-          l.returnRate = l.delivered > 0 ? (l.returned / l.delivered) * 100 : 0;
-          l.sellThrough = l.delivered > 0 ? (l.sold / l.delivered) * 100 : 0;
-          l.trend = deriveTrend(l.returnRate, l.sellThrough);
-          l.monthlyBreakdown = Object.entries(monthlyMap[l.location] || {})
-            .map(([month, data]) => ({ month, ...data }))
-            .sort((a, b) => a.month.localeCompare(b.month));
-          return l;
-        });
-        setRegions(stats);
-      }
-    } catch (e) {
-      console.error("Regional fetch error:", e);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const scatterData = useMemo(() =>
+    regions.map((r) => ({
+      name: r.location.length > 15 ? r.location.slice(0, 13) + "…" : r.location,
+      x: r.demand_score,
+      y: r.efficiency_score,
+      z: r.ai_confidence,
+      action: r.recommended_action,
+    })), [regions]);
 
-  useEffect(() => { fetchData(); }, [fetchData]);
+  const top5Radar = useMemo(() =>
+    [...regions].sort((a, b) => b.demand_score - a.demand_score).slice(0, 5).map((r) => ({
+      location: r.location.length > 12 ? r.location.slice(0, 10) + "…" : r.location,
+      Demand: r.demand_score,
+      Efficiency: r.efficiency_score,
+      Confidence: r.ai_confidence,
+    })), [regions]);
 
-  // Aggregated KPIs
-  const totalSold = regions.reduce((s, r) => s + r.sold, 0);
-  const totalReturned = regions.reduce((s, r) => s + r.returned, 0);
-  const totalRevenue = regions.reduce((s, r) => s + r.revenue, 0);
-  const totalDelivered = totalSold + totalReturned;
-  const avgSellThrough = totalDelivered > 0 ? (totalSold / totalDelivered) * 100 : 0;
-  const growingCount = regions.filter((r) => r.trend === "growing").length;
-  const decliningCount = regions.filter((r) => r.trend === "declining").length;
-  const stableCount = regions.filter((r) => r.trend === "stable").length;
-
-  // Top 10 by sold for bar chart
-  const top10 = useMemo(() =>
-    [...regions].sort((a, b) => b.sold - a.sold).slice(0, 10).map((r) => ({
-      name: r.location.length > 20 ? r.location.slice(0, 18) + "…" : r.location,
-      Sold: r.sold,
-      Returned: r.returned,
-    })),
-    [regions]
-  );
-
-  // Pie chart data for trend distribution
-  const trendPie = useMemo(() => [
-    { name: "Growing", value: growingCount, color: "#10B981" },
-    { name: "Declining", value: decliningCount, color: "#EF4444" },
-    { name: "Stable", value: stableCount, color: "#F59E0B" },
-  ].filter((d) => d.value > 0), [growingCount, decliningCount, stableCount]);
-
-  // Top 5 for radar
-  const radarData = useMemo(() =>
-    [...regions].sort((a, b) => b.revenue - a.revenue).slice(0, 5).map((r) => ({
-      location: r.location.length > 15 ? r.location.slice(0, 13) + "…" : r.location,
-      "Sell-Through": Math.round(r.sellThrough),
-      "Revenue Share": totalRevenue > 0 ? Math.round((r.revenue / totalRevenue) * 100) : 0,
-      "Volume Share": totalSold > 0 ? Math.round((r.sold / totalSold) * 100) : 0,
-    })),
-    [regions, totalRevenue, totalSold]
-  );
-
-  // Filtered & sorted table
   const filteredRegions = useMemo(() => {
     let list = regions;
     if (search) {
       const q = search.toLowerCase();
       list = list.filter((r) => r.location.toLowerCase().includes(q));
     }
-    return [...list].sort((a, b) => {
-      const av = a[sortBy];
-      const bv = b[sortBy];
-      return sortAsc ? av - bv : bv - av;
-    });
+    return [...list].sort((a, b) => sortAsc ? a[sortBy] - b[sortBy] : b[sortBy] - a[sortBy]);
   }, [regions, search, sortBy, sortAsc]);
 
   const handleSort = (key: SortKey) => {
@@ -197,186 +115,351 @@ export default function Regional() {
     else { setSortBy(key); setSortAsc(false); }
   };
 
-  const trendBadge = (trend: Trend) => {
-    const config = {
-      growing: { icon: TrendingUp, color: "#10B981", bg: "#ECFDF5", label: "Growing" },
-      declining: { icon: TrendingDown, color: "#EF4444", bg: "#FEF2F2", label: "Declining" },
-      stable: { icon: Minus, color: "#F59E0B", bg: "#FFFBEB", label: "Stable" },
-    };
-    const t = config[trend];
-    const Icon = t.icon;
-    return (
-      <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 11, fontWeight: 600, color: t.color, background: t.bg, padding: "3px 10px", borderRadius: 20 }}>
-        <Icon size={12} /> {t.label}
-      </span>
-    );
-  };
+  const oa = analysis?.overall_assessment;
 
   return (
     <AppLayout>
-      <div style={{ fontFamily: "'DM Sans', sans-serif" }}>
+      <div className="font-[family-name:var(--font-body)]">
         {/* Header */}
-        <div style={{ background: "#0D1117", borderRadius: 12, padding: "24px 28px", marginBottom: 24 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 20 }}>
-            <div style={{ width: 44, height: 44, borderRadius: 12, background: "linear-gradient(135deg, #3B82F6, #1D4ED8)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <MapPin size={22} color="#fff" />
+        <div className="rounded-xl p-6 mb-6 bg-sidebar-background">
+          <div className="flex items-center gap-3.5 mb-5">
+            <div className="w-11 h-11 rounded-xl gradient-primary flex items-center justify-center">
+              <Brain size={22} className="text-primary-foreground" />
             </div>
             <div>
-              <div style={{ fontSize: 11, fontWeight: 600, color: "#3B82F6", textTransform: "uppercase", letterSpacing: 1.2, marginBottom: 2 }}>Regional Intelligence</div>
-              <h1 style={{ fontSize: 22, fontWeight: 700, color: "#F9FAFB", margin: 0 }}>Regional Data Analytics</h1>
+              <div className="text-[11px] font-semibold text-primary uppercase tracking-widest mb-0.5">AI-Powered</div>
+              <h1 className="text-xl font-bold text-sidebar-primary-foreground m-0">Regional Demand & Supply Intelligence</h1>
             </div>
           </div>
-
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))", gap: 1, background: "#161B22", borderRadius: 10, overflow: "hidden" }}>
-            {[
-              { label: "Total Outlets", value: regions.length.toString(), color: "#60A5FA" },
-              { label: "Total Sold", value: totalSold.toLocaleString(), color: "#10B981" },
-              { label: "Total Returned", value: totalReturned.toLocaleString(), color: "#EF4444" },
-              { label: "Total Revenue", value: `N$${(totalRevenue / 1000).toFixed(1)}k`, color: "#F59E0B" },
-              { label: "Avg Sell-Through", value: `${avgSellThrough.toFixed(1)}%`, color: "#A78BFA" },
-            ].map((stat, i) => (
-              <div key={i} style={{ padding: "16px 20px", background: "#0D1117", textAlign: "center" }}>
-                <div style={{ fontSize: 11, color: "#6B7280", marginBottom: 4, fontWeight: 500 }}>{stat.label}</div>
-                <div style={{ fontSize: 20, fontWeight: 700, color: stat.color }}>{stat.value}</div>
-              </div>
-            ))}
-          </div>
+          <p className="text-sidebar-foreground text-sm mb-4 max-w-2xl">
+            AI analyses each outlet's demand patterns, supply efficiency, and return rates to classify regions and recommend optimized distribution activities.
+          </p>
+          <Button
+            onClick={runAnalysis}
+            disabled={loading}
+            className="gradient-primary text-primary-foreground border-none"
+          >
+            <Brain size={16} className="mr-2" />
+            {loading ? "Analyzing Regions…" : hasRun ? "Re-run AI Analysis" : "Run AI Regional Analysis"}
+          </Button>
         </div>
 
-        {loading ? (
-          <div style={{ textAlign: "center", padding: 60, color: "#9CA3AF" }}>Loading regional data...</div>
-        ) : regions.length === 0 ? (
+        {!hasRun && !loading ? (
           <Card>
             <CardContent className="p-12 text-center">
-              <BarChart3 className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
-              <p className="text-muted-foreground">No data available. Upload a dataset first.</p>
+              <Brain className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+              <p className="text-muted-foreground text-sm">Click "Run AI Regional Analysis" to generate demand/supply intelligence for all outlets.</p>
             </CardContent>
           </Card>
-        ) : (
+        ) : loading ? (
+          <Card>
+            <CardContent className="p-12 text-center">
+              <Activity className="mx-auto mb-4 h-12 w-12 text-primary animate-pulse" />
+              <p className="text-muted-foreground text-sm">AI is analyzing {locationStats.length || "all"} outlets across all months…</p>
+              <p className="text-muted-foreground text-xs mt-1">This typically takes 10-20 seconds</p>
+            </CardContent>
+          </Card>
+        ) : analysis ? (
           <>
-            {/* Charts Row */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20, marginBottom: 24 }}>
-              {/* Top 10 Bar Chart */}
-              <div style={{ background: "#fff", borderRadius: 12, padding: "20px 24px", boxShadow: "0 1px 3px rgba(0,0,0,0.05)" }}>
-                <h2 style={{ fontSize: 15, fontWeight: 700, color: "#111827", margin: "0 0 16px" }}>Top 10 Outlets by Volume</h2>
-                <ResponsiveContainer width="100%" height={320}>
-                  <BarChart data={top10} layout="vertical" margin={{ left: 10, right: 20 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-                    <XAxis type="number" fontSize={11} tick={{ fill: "#6B7280" }} />
-                    <YAxis type="category" dataKey="name" fontSize={11} tick={{ fill: "#374151" }} width={130} />
-                    <Tooltip content={<CustomTooltip />} />
-                    <Bar dataKey="Sold" fill="#10B981" radius={[0, 4, 4, 0]} />
-                    <Bar dataKey="Returned" fill="#EF4444" radius={[0, 4, 4, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
+            {/* Overall Assessment KPI Strip */}
+            {oa && (
+              <div className="grid grid-cols-4 gap-4 mb-6">
+                <Card className="shadow-card">
+                  <CardContent className="p-4 text-center">
+                    <div className="text-xs text-muted-foreground font-medium mb-1">Network Health</div>
+                    <div className="text-2xl font-bold text-primary">{oa.network_health_score}<span className="text-sm font-normal">/100</span></div>
+                    <Progress value={oa.network_health_score} className="mt-2 h-1.5" />
+                  </CardContent>
+                </Card>
+                <Card className="shadow-card">
+                  <CardContent className="p-4 text-center">
+                    <div className="text-xs text-muted-foreground font-medium mb-1">Balance Status</div>
+                    <Badge variant={oa.balance_status === "balanced" ? "default" : "destructive"} className="text-sm mt-1">
+                      {oa.balance_status.replace(/-/g, " ").toUpperCase()}
+                    </Badge>
+                  </CardContent>
+                </Card>
+                <Card className="shadow-card">
+                  <CardContent className="p-4 text-center">
+                    <div className="text-xs text-muted-foreground font-medium mb-1">Waste Rate</div>
+                    <div className="text-2xl font-bold text-destructive">{oa.total_waste_pct.toFixed(1)}%</div>
+                  </CardContent>
+                </Card>
+                <Card className="shadow-card">
+                  <CardContent className="p-4 text-center">
+                    <div className="text-xs text-muted-foreground font-medium mb-1">Outlets Analyzed</div>
+                    <div className="text-2xl font-bold text-foreground">{regions.length}</div>
+                  </CardContent>
+                </Card>
               </div>
+            )}
 
-              {/* Trend Distribution + Radar */}
-              <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-                <div style={{ background: "#fff", borderRadius: 12, padding: "20px 24px", boxShadow: "0 1px 3px rgba(0,0,0,0.05)", flex: 1 }}>
-                  <h2 style={{ fontSize: 15, fontWeight: 700, color: "#111827", margin: "0 0 12px" }}>Outlet Trend Distribution</h2>
-                  <ResponsiveContainer width="100%" height={140}>
+            {/* AI Summary */}
+            {oa && (
+              <Card className="mb-6 shadow-card border-l-4 border-l-primary">
+                <CardContent className="p-4">
+                  <div className="flex items-start gap-3">
+                    <Eye size={18} className="text-primary mt-0.5 shrink-0" />
+                    <div>
+                      <div className="text-sm font-semibold text-foreground mb-1">AI Assessment Summary</div>
+                      <p className="text-sm text-muted-foreground leading-relaxed">{oa.summary}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Charts Row */}
+            <div className="grid grid-cols-3 gap-5 mb-6">
+              {/* Supply Distribution Pie */}
+              <Card className="shadow-card">
+                <CardHeader className="pb-2"><CardTitle className="text-sm">Supply Balance Distribution</CardTitle></CardHeader>
+                <CardContent>
+                  <ResponsiveContainer width="100%" height={200}>
                     <PieChart>
-                      <Pie data={trendPie} cx="50%" cy="50%" innerRadius={35} outerRadius={60} dataKey="value" paddingAngle={4}>
-                        {trendPie.map((entry, i) => (
-                          <Cell key={i} fill={entry.color} />
-                        ))}
+                      <Pie data={supplyDistribution} cx="50%" cy="50%" innerRadius={40} outerRadius={70} dataKey="value" paddingAngle={3}>
+                        {supplyDistribution.map((e, i) => <Cell key={i} fill={e.color} />)}
                       </Pie>
-                      <Legend iconType="circle" wrapperStyle={{ fontSize: 12 }} />
-                      <Tooltip content={<CustomTooltip />} />
+                      <Legend iconType="circle" wrapperStyle={{ fontSize: 11 }} />
+                      <Tooltip content={<ChartTooltip />} />
                     </PieChart>
                   </ResponsiveContainer>
-                </div>
+                </CardContent>
+              </Card>
 
-                <div style={{ background: "#fff", borderRadius: 12, padding: "20px 24px", boxShadow: "0 1px 3px rgba(0,0,0,0.05)", flex: 1 }}>
-                  <h2 style={{ fontSize: 15, fontWeight: 700, color: "#111827", margin: "0 0 12px" }}>Top 5 Performance Radar</h2>
-                  <ResponsiveContainer width="100%" height={180}>
-                    <RadarChart data={radarData}>
-                      <PolarGrid stroke="#E5E7EB" />
-                      <PolarAngleAxis dataKey="location" tick={{ fontSize: 10, fill: "#6B7280" }} />
-                      <PolarRadiusAxis tick={{ fontSize: 9 }} />
-                      <Radar name="Sell-Through" dataKey="Sell-Through" stroke="#10B981" fill="#10B981" fillOpacity={0.15} />
-                      <Radar name="Revenue Share" dataKey="Revenue Share" stroke="#3B82F6" fill="#3B82F6" fillOpacity={0.15} />
-                      <Radar name="Volume Share" dataKey="Volume Share" stroke="#F59E0B" fill="#F59E0B" fillOpacity={0.15} />
+              {/* Action Distribution Pie */}
+              <Card className="shadow-card">
+                <CardHeader className="pb-2"><CardTitle className="text-sm">Recommended Actions</CardTitle></CardHeader>
+                <CardContent>
+                  <ResponsiveContainer width="100%" height={200}>
+                    <PieChart>
+                      <Pie data={actionDistribution} cx="50%" cy="50%" innerRadius={40} outerRadius={70} dataKey="value" paddingAngle={3}>
+                        {actionDistribution.map((e, i) => <Cell key={i} fill={e.color} />)}
+                      </Pie>
+                      <Legend iconType="circle" wrapperStyle={{ fontSize: 11 }} />
+                      <Tooltip content={<ChartTooltip />} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+
+              {/* Top 5 Radar */}
+              <Card className="shadow-card">
+                <CardHeader className="pb-2"><CardTitle className="text-sm">Top 5 Performance Radar</CardTitle></CardHeader>
+                <CardContent>
+                  <ResponsiveContainer width="100%" height={200}>
+                    <RadarChart data={top5Radar}>
+                      <PolarGrid stroke="hsl(var(--border))" />
+                      <PolarAngleAxis dataKey="location" tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} />
+                      <PolarRadiusAxis tick={{ fontSize: 8 }} />
+                      <Radar name="Demand" dataKey="Demand" stroke="hsl(var(--chart-2))" fill="hsl(var(--chart-2))" fillOpacity={0.15} />
+                      <Radar name="Efficiency" dataKey="Efficiency" stroke="hsl(var(--chart-1))" fill="hsl(var(--chart-1))" fillOpacity={0.15} />
+                      <Radar name="Confidence" dataKey="Confidence" stroke="hsl(var(--chart-3))" fill="hsl(var(--chart-3))" fillOpacity={0.15} />
                       <Legend iconType="circle" wrapperStyle={{ fontSize: 11 }} />
                     </RadarChart>
                   </ResponsiveContainer>
-                </div>
-              </div>
+                </CardContent>
+              </Card>
             </div>
 
-            {/* Full Table */}
-            <div style={{ background: "#fff", borderRadius: 12, padding: "20px 24px", boxShadow: "0 1px 3px rgba(0,0,0,0.05)" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16, flexWrap: "wrap", gap: 12 }}>
-                <h2 style={{ fontSize: 15, fontWeight: 700, color: "#111827", margin: 0 }}>All Outlets Breakdown</h2>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, background: "#F3F4F6", borderRadius: 8, padding: "8px 12px", maxWidth: 300 }}>
-                  <Search size={16} color="#9CA3AF" />
-                  <input
-                    type="text"
-                    placeholder="Search outlets..."
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    style={{ border: "none", outline: "none", background: "transparent", fontSize: 13, color: "#111827", width: "100%", fontFamily: "'DM Sans', sans-serif" }}
-                  />
-                </div>
-              </div>
+            {/* Demand vs Efficiency Scatter */}
+            <Card className="mb-6 shadow-card">
+              <CardHeader className="pb-2"><CardTitle className="text-sm">Demand Score vs Supply Efficiency (bubble = AI confidence)</CardTitle></CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={280}>
+                  <ScatterChart margin={{ left: 10, right: 20, top: 10, bottom: 10 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                    <XAxis type="number" dataKey="x" name="Demand" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} label={{ value: "Demand Score", position: "bottom", fontSize: 11 }} />
+                    <YAxis type="number" dataKey="y" name="Efficiency" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} label={{ value: "Efficiency", angle: -90, position: "insideLeft", fontSize: 11 }} />
+                    <ZAxis type="number" dataKey="z" range={[40, 400]} name="Confidence" />
+                    <Tooltip content={<ChartTooltip />} />
+                    <Scatter data={scatterData} fill="hsl(var(--primary))" fillOpacity={0.6} />
+                  </ScatterChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
 
-              <div style={{ overflowX: "auto" }}>
-                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
-                  <thead>
-                    <tr style={{ borderBottom: "2px solid #E5E7EB" }}>
-                      <th style={{ textAlign: "left", padding: "10px 12px", color: "#6B7280", fontWeight: 600, fontSize: 12 }}>Outlet</th>
-                      {([
-                        ["sold", "Sold"],
-                        ["returned", "Returned"],
-                        ["revenue", "Revenue"],
-                        ["returnRate", "Return %"],
-                        ["sellThrough", "Sell-Through %"],
-                      ] as [SortKey, string][]).map(([key, label]) => (
-                        <th
-                          key={key}
-                          onClick={() => handleSort(key)}
-                          style={{ textAlign: "right", padding: "10px 12px", color: sortBy === key ? "#111827" : "#6B7280", fontWeight: 600, fontSize: 12, cursor: "pointer", userSelect: "none", whiteSpace: "nowrap" }}
-                        >
-                          <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
-                            {label} <ArrowUpDown size={12} />
-                          </span>
-                        </th>
+            {/* AI Decision Factors */}
+            {analysis.ai_decision_factors?.length > 0 && (
+              <Card className="mb-6 shadow-card">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm flex items-center gap-2">
+                    <Zap size={16} className="text-chart-3" /> How AI Determines Activities
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 gap-3">
+                    {analysis.ai_decision_factors.map((f, i) => (
+                      <div key={i} className="rounded-lg border border-border p-3">
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-sm font-semibold text-foreground">{f.factor_name}</span>
+                          <Badge variant={f.weight === "high" ? "default" : "secondary"} className="text-[10px]">
+                            {f.weight} weight
+                          </Badge>
+                        </div>
+                        <p className="text-xs text-muted-foreground mb-1">{f.description}</p>
+                        <div className="text-[10px] font-mono text-primary bg-primary/5 rounded px-2 py-0.5 inline-block">
+                          Threshold: {f.threshold}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Risk & Opportunities Row */}
+            <div className="grid grid-cols-2 gap-5 mb-6">
+              {/* Risk Regions */}
+              {analysis.risk_regions?.length > 0 && (
+                <Card className="shadow-card">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm flex items-center gap-2">
+                      <AlertTriangle size={16} className="text-destructive" /> Risk Regions
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                    {analysis.risk_regions.map((r, i) => (
+                      <div key={i} className="rounded-lg border border-border p-3">
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-sm font-semibold text-foreground">{r.location}</span>
+                          <Badge variant={r.urgency === "immediate" ? "destructive" : "secondary"} className="text-[10px]">
+                            {r.urgency}
+                          </Badge>
+                        </div>
+                        <div className="text-xs text-muted-foreground font-medium">{r.risk_type}</div>
+                        <p className="text-xs text-muted-foreground mt-0.5">{r.description}</p>
+                      </div>
+                    ))}
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Growth Opportunities */}
+              {analysis.growth_opportunities?.length > 0 && (
+                <Card className="shadow-card">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm flex items-center gap-2">
+                      <Rocket size={16} className="text-accent" /> Growth Opportunities
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                    {analysis.growth_opportunities.map((g, i) => (
+                      <div key={i} className="rounded-lg border border-border p-3">
+                        <div className="text-sm font-semibold text-foreground mb-0.5">{g.location}</div>
+                        <div className="text-xs text-accent font-medium">{g.opportunity_type}</div>
+                        <p className="text-xs text-muted-foreground mt-0.5">{g.potential_impact}</p>
+                        <p className="text-[10px] text-primary mt-1">💡 {g.recommended_investment}</p>
+                      </div>
+                    ))}
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+
+            {/* Full Outlet Table with AI Classifications */}
+            <Card className="shadow-card">
+              <CardHeader className="pb-2">
+                <div className="flex items-center justify-between flex-wrap gap-3">
+                  <CardTitle className="text-sm">AI-Classified Outlet Breakdown</CardTitle>
+                  <div className="flex items-center gap-2 bg-secondary rounded-lg px-3 py-2 max-w-xs">
+                    <Search size={14} className="text-muted-foreground" />
+                    <input
+                      type="text"
+                      placeholder="Search outlets..."
+                      value={search}
+                      onChange={(e) => setSearch(e.target.value)}
+                      className="border-none outline-none bg-transparent text-xs text-foreground w-full font-[family-name:var(--font-body)]"
+                    />
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs">
+                    <thead>
+                      <tr className="border-b-2 border-border">
+                        <th className="text-left p-2.5 text-muted-foreground font-semibold">Outlet</th>
+                        <th className="text-center p-2.5 text-muted-foreground font-semibold">Demand</th>
+                        <th className="text-center p-2.5 text-muted-foreground font-semibold">Supply</th>
+                        <th className="text-center p-2.5 text-muted-foreground font-semibold">Action</th>
+                        {(["demand_score", "efficiency_score", "ai_confidence"] as SortKey[]).map((key) => (
+                          <th
+                            key={key}
+                            onClick={() => handleSort(key)}
+                            className="text-right p-2.5 text-muted-foreground font-semibold cursor-pointer select-none whitespace-nowrap hover:text-foreground"
+                          >
+                            <span className="inline-flex items-center gap-1">
+                              {key === "demand_score" ? "Demand %" : key === "efficiency_score" ? "Efficiency %" : "AI Conf %"}
+                              <ArrowUpDown size={10} />
+                            </span>
+                          </th>
+                        ))}
+                        <th className="text-center p-2.5 text-muted-foreground font-semibold">Risk</th>
+                        <th className="w-8" />
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredRegions.map((r, i) => (
+                        <>
+                          <tr
+                            key={r.location}
+                            className={`border-b border-border cursor-pointer hover:bg-muted/50 transition-colors ${i % 2 === 0 ? "bg-card" : "bg-muted/20"}`}
+                            onClick={() => setExpandedRow(expandedRow === r.location ? null : r.location)}
+                          >
+                            <td className="p-2.5 font-semibold text-foreground max-w-[180px] truncate">{r.location}</td>
+                            <td className="text-center p-2.5">
+                              <Badge variant="outline" className="text-[10px]" style={{ borderColor: DEMAND_COLORS[r.demand_level], color: DEMAND_COLORS[r.demand_level] }}>
+                                {r.demand_level}
+                              </Badge>
+                            </td>
+                            <td className="text-center p-2.5">
+                              <Badge variant="outline" className="text-[10px]" style={{ borderColor: SUPPLY_COLORS[r.supply_status], color: SUPPLY_COLORS[r.supply_status] }}>
+                                {r.supply_status.replace(/-/g, " ")}
+                              </Badge>
+                            </td>
+                            <td className="text-center p-2.5">
+                              <Badge className="text-[10px]" style={{ backgroundColor: ACTION_COLORS[r.recommended_action], color: "#fff" }}>
+                                {r.recommended_action.replace(/_/g, " ")}
+                              </Badge>
+                            </td>
+                            <td className="text-right p-2.5 font-semibold" style={{ color: DEMAND_COLORS[r.demand_level] }}>{r.demand_score}</td>
+                            <td className="text-right p-2.5 font-semibold" style={{ color: r.efficiency_score >= 70 ? DEMAND_COLORS.high : r.efficiency_score >= 40 ? DEMAND_COLORS.medium : DEMAND_COLORS.low }}>
+                              {r.efficiency_score}
+                            </td>
+                            <td className="text-right p-2.5 font-semibold text-primary">{r.ai_confidence}</td>
+                            <td className="text-center p-2.5">
+                              <span className="inline-block w-2 h-2 rounded-full" style={{ backgroundColor: RISK_COLORS[r.risk_level] }} />
+                            </td>
+                            <td className="p-2.5 text-center">
+                              {expandedRow === r.location ? <ChevronUp size={12} className="text-muted-foreground" /> : <ChevronDown size={12} className="text-muted-foreground" />}
+                            </td>
+                          </tr>
+                          {expandedRow === r.location && (
+                            <tr key={`${r.location}-detail`} className="bg-primary/5">
+                              <td colSpan={9} className="p-4">
+                                <div className="flex items-start gap-2">
+                                  <Brain size={14} className="text-primary mt-0.5 shrink-0" />
+                                  <div>
+                                    <div className="text-xs font-semibold text-foreground mb-1">AI Reasoning</div>
+                                    <p className="text-xs text-muted-foreground leading-relaxed">{r.reasoning}</p>
+                                  </div>
+                                </div>
+                              </td>
+                            </tr>
+                          )}
+                        </>
                       ))}
-                      <th style={{ textAlign: "center", padding: "10px 12px", color: "#6B7280", fontWeight: 600, fontSize: 12 }}>Trend</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredRegions.map((r, i) => {
-                      const barColor = r.sellThrough >= 80 ? "#10B981" : r.sellThrough >= 65 ? "#F59E0B" : "#EF4444";
-                      return (
-                        <tr key={r.location} style={{ borderBottom: "1px solid #F3F4F6", background: i % 2 === 0 ? "#fff" : "#FAFAFA" }}>
-                          <td style={{ padding: "10px 12px", fontWeight: 600, color: "#111827", maxWidth: 220, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.location}</td>
-                          <td style={{ textAlign: "right", padding: "10px 12px", color: "#10B981", fontWeight: 600 }}>{r.sold.toLocaleString()}</td>
-                          <td style={{ textAlign: "right", padding: "10px 12px", color: "#EF4444", fontWeight: 600 }}>{r.returned.toLocaleString()}</td>
-                          <td style={{ textAlign: "right", padding: "10px 12px", color: "#374151", fontWeight: 600 }}>N${r.revenue.toLocaleString()}</td>
-                          <td style={{ textAlign: "right", padding: "10px 12px", color: r.returnRate > 30 ? "#EF4444" : "#6B7280", fontWeight: 600 }}>{r.returnRate.toFixed(1)}%</td>
-                          <td style={{ textAlign: "right", padding: "10px 12px" }}>
-                            <div style={{ display: "flex", alignItems: "center", gap: 8, justifyContent: "flex-end" }}>
-                              <div style={{ width: 60, height: 6, background: "#E5E7EB", borderRadius: 3, overflow: "hidden" }}>
-                                <div style={{ height: "100%", width: `${Math.min(r.sellThrough, 100)}%`, background: barColor, borderRadius: 3 }} />
-                              </div>
-                              <span style={{ fontWeight: 600, color: barColor, fontSize: 12 }}>{r.sellThrough.toFixed(1)}%</span>
-                            </div>
-                          </td>
-                          <td style={{ textAlign: "center", padding: "10px 12px" }}>{trendBadge(r.trend)}</td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-              <div style={{ marginTop: 12, fontSize: 12, color: "#9CA3AF" }}>
-                Showing {filteredRegions.length} of {regions.length} outlets
-              </div>
-            </div>
+                    </tbody>
+                  </table>
+                </div>
+                <div className="mt-3 text-xs text-muted-foreground">
+                  Showing {filteredRegions.length} of {regions.length} outlets • Click a row to see AI reasoning
+                </div>
+              </CardContent>
+            </Card>
           </>
-        )}
+        ) : null}
       </div>
     </AppLayout>
   );
