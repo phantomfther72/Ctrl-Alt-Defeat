@@ -162,9 +162,37 @@ export default function DataIngestion() {
         });
       } else {
         toast({
-          title: "File processed",
-          description: `${file.name} — ${parseResult.rowCount.toLocaleString()} rows parsed successfully.`,
+          title: "File parsed",
+          description: `${file.name} — ${parseResult.rowCount.toLocaleString()} rows parsed. Processing analytics...`,
         });
+
+        // Trigger downstream processing to populate analytics tables
+        try {
+          const { data: processResult, error: processErr } = await supabase.functions.invoke(
+            "process-dataset",
+            { body: { fileUploadId: uploadRecord.id } }
+          );
+
+          if (processErr || processResult?.error) {
+            toast({
+              title: "Processing warning",
+              description: processResult?.error || processErr?.message || "Analytics processing encountered an issue.",
+              variant: "destructive",
+            });
+          } else {
+            toast({
+              title: "Analytics ready",
+              description: `Processed ${processResult.clean_data_count} records into ${processResult.summary_count} monthly summaries and ${processResult.prediction_count} predictions.`,
+            });
+          }
+        } catch (processError) {
+          console.error("Process error:", processError);
+          toast({
+            title: "Processing warning",
+            description: "File was parsed but analytics processing failed. You can retry from the uploads list.",
+            variant: "destructive",
+          });
+        }
       }
     } catch (err) {
       toast({
