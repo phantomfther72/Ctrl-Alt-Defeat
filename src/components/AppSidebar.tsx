@@ -7,6 +7,7 @@ import {
   Settings,
   Brain,
   Newspaper,
+  MapPin,
 } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
