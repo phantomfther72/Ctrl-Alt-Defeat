@@ -378,7 +378,7 @@ export default function Forecasting() {
                           <tr key={row.month} className="border-b border-border/50 hover:bg-muted/30 transition-colors">
                             <td className="py-2 px-3 font-medium text-card-foreground">{row.month}</td>
                             <td className="py-2 px-3 text-right text-card-foreground">
-                              {row.actual !== null ? `$${row.actual.toLocaleString()}` : "—"}
+                              {row.actual !== null ? `N$${row.actual.toLocaleString()}` : "—"}
                             </td>
                             <td className="py-2 px-3 text-right text-muted-foreground">
                               ${row.regression.toLocaleString()}
