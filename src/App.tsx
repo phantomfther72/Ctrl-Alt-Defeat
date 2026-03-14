@@ -37,7 +37,8 @@ const App = () => (
             <Route path="/data-ingestion" element={<ProtectedRoute><DataIngestion /></ProtectedRoute>} />
             <Route path="/insights" element={<ProtectedRoute><Insights /></ProtectedRoute>} />
             <Route path="/forecasting" element={<ProtectedRoute><Forecasting /></ProtectedRoute>} />
-            
+            <Route path="/regional" element={<ProtectedRoute><Regional /></ProtectedRoute>} />
+
             <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
             
             <Route path="*" element={<NotFound />} />
