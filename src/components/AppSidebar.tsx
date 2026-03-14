@@ -27,7 +27,7 @@ const mainNavItems = [
   { title: "Data Ingestion", url: "/data-ingestion", icon: Upload },
   { title: "Insights", url: "/insights", icon: Lightbulb },
   { title: "Forecasting", url: "/forecasting", icon: LineChart },
-
+  { title: "Regional", url: "/regional", icon: MapPin },
 ];
 
 const systemNavItems = [
