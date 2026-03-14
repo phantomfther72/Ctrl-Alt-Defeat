@@ -280,6 +280,7 @@ export default function DataIngestion() {
 
         {/* Upload Area */}
         <Card
+          data-tour="upload-area"
           className={`shadow-card border-2 border-dashed transition-colors cursor-pointer ${
             dragActive ? "border-primary bg-primary/5" : "border-border"
           } ${uploading ? "pointer-events-none opacity-60" : ""}`}
