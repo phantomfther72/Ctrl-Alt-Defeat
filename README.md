@@ -1,73 +1,90 @@
-# Welcome to your Lovable project
+# New Era Intelligence Platform
 
-## Project info
+An AI-powered commercial intelligence and newsroom analytics platform designed to transform raw operational data into actionable business insight.
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+## Overview
 
-## How can I edit this code?
+New Era Intelligence Platform is built to support media organizations by turning internal sales, circulation, advertising, and audience performance data into clear predictive insight.
 
-There are several ways of editing your application.
+The platform combines data ingestion, analytics, forecasting, and recommendation systems to help decision-makers identify trends early, monitor performance in real time, and improve commercial outcomes.
 
-**Use Lovable**
+It is designed around practical newsroom and commercial workflows, where data needs to move beyond reporting and into decision support.
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+## Core Capabilities
 
-Changes made via Lovable will be committed automatically to this repo.
+- Commercial performance analytics dashboard
+- Sales trend forecasting
+- Advertising revenue analysis
+- Traffic-light recommendation engine
+- Predictive intelligence on operational metrics
+- Historical pattern detection
+- Interactive data visualization
+- Role-based access architecture
+- Scalable backend integration
 
-**Use your preferred IDE**
+## Key Intelligence Modules
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### Sales Intelligence
+Tracks and predicts:
+- Revenue movement
+- Product category performance
+- Regional sales patterns
+- Underperforming segments
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+### Advertising Intelligence
+Monitors:
+- Ad revenue trends
+- Client contribution patterns
+- Campaign performance indicators
 
-Follow these steps:
+### Distribution Intelligence
+Provides insight into:
+- Circulation performance
+- Geographic movement
+- Demand fluctuations
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+### Recommendation Engine
+Traffic-light decision system:
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+- **Green** → Performing well / maintain strategy  
+- **Amber** → Watch closely / moderate intervention  
+- **Red** → Immediate action required  
 
-# Step 3: Install the necessary dependencies.
-npm i
+## Technology Stack
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
-
-**Edit a file directly in GitHub**
-
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
+Frontend:
 - React
-- shadcn-ui
+- TypeScript
 - Tailwind CSS
 
-## How can I deploy this project?
+Backend:
+- Supabase
 
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
+AI / Analytics:
+- Predictive modeling layer
+- Statistical trend analysis
+- Rule-based intelligence scoring
 
-## Can I connect a custom domain to my Lovable project?
+Deployment:
+- Vercel
 
-Yes, you can!
+## Architecture Philosophy
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+The platform is designed around four principles:
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+1. Fast decision visibility  
+2. Operational clarity  
+3. Predictive usefulness  
+4. Scalable intelligence integration  
+
+## Repository Structure
+
+```bash
+src/
+├── components/
+├── pages/
+├── services/
+├── analytics/
+├── hooks/
+├── utils/
+└── integrations/
