@@ -29,6 +29,7 @@ const mainNavItems = [
   { title: "Insights", url: "/insights", icon: Lightbulb },
   { title: "Forecasting", url: "/forecasting", icon: LineChart },
   { title: "Regional", url: "/regional", icon: MapPin },
+  { title: "System Overview", url: "/system-overview", icon: Brain },
 ];
 
 const systemNavItems = [

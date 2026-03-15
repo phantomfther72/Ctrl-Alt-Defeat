@@ -10,6 +10,7 @@ import DataIngestion from "./pages/DataIngestion.tsx";
 import Insights from "./pages/Insights.tsx";
 import Forecasting from "./pages/Forecasting.tsx";
 import Regional from "./pages/Regional.tsx";
+import SystemOverview from "./pages/SystemOverview.tsx";
 
 import Admin from "./pages/Admin.tsx";
 import Login from "./pages/Login.tsx";
@@ -38,6 +39,7 @@ const App = () => (
             <Route path="/insights" element={<ProtectedRoute><Insights /></ProtectedRoute>} />
             <Route path="/forecasting" element={<ProtectedRoute><Forecasting /></ProtectedRoute>} />
             <Route path="/regional" element={<ProtectedRoute><Regional /></ProtectedRoute>} />
+            <Route path="/system-overview" element={<ProtectedRoute><SystemOverview /></ProtectedRoute>} />
 
             <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
             
