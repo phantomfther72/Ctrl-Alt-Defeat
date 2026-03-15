@@ -152,8 +152,7 @@ export function WalkthroughTour() {
       if (type === EVENTS.TARGET_NOT_FOUND) {
         // Re-trigger after a delay to retry finding the target
         setRun(false);
-        const timer = setTimeout(() => setRun(true), 1500);
-        return () => clearTimeout(timer);
+        setTimeout(() => setRun(true), 1500);
       }
     },
     [location.pathname, navigate]
