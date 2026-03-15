@@ -99,19 +99,21 @@ export function WalkthroughTour() {
     const savedStep = localStorage.getItem(TOUR_STEP_KEY);
 
     if (active === "true" && savedStep) {
-      // Resume tour at saved step
+      // Resume tour at saved step — wait for DOM targets to render
       const idx = parseInt(savedStep, 10);
       const step = tourSteps[idx];
       if (step?.route === location.pathname) {
+        setRun(false);
         setStepIndex(idx);
-        const timer = setTimeout(() => setRun(true), 600);
+        // Wait for page content (including async data) to render
+        const timer = setTimeout(() => setRun(true), 1200);
         return () => clearTimeout(timer);
       }
     } else if (location.pathname === "/") {
       // First time — start tour
       localStorage.setItem(TOUR_ACTIVE_KEY, "true");
       localStorage.setItem(TOUR_STEP_KEY, "0");
-      const timer = setTimeout(() => setRun(true), 800);
+      const timer = setTimeout(() => setRun(true), 1000);
       return () => clearTimeout(timer);
     }
   }, [location.pathname]);
