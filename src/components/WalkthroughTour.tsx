@@ -130,7 +130,7 @@ export function WalkthroughTour() {
         return;
       }
 
-      if (type === EVENTS.STEP_AFTER || type === EVENTS.TARGET_NOT_FOUND) {
+      if (type === EVENTS.STEP_AFTER) {
         const nextIndex = action === ACTIONS.PREV ? index - 1 : index + 1;
 
         if (nextIndex >= 0 && nextIndex < tourSteps.length) {
@@ -146,6 +146,14 @@ export function WalkthroughTour() {
             setStepIndex(nextIndex);
           }
         }
+      }
+
+      // If target not found, don't advance — just wait for it to appear
+      if (type === EVENTS.TARGET_NOT_FOUND) {
+        // Re-trigger after a delay to retry finding the target
+        setRun(false);
+        const timer = setTimeout(() => setRun(true), 1500);
+        return () => clearTimeout(timer);
       }
     },
     [location.pathname, navigate]
